@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\TextQuest.Application\TextQuest.Application.csproj" />
+		<ProjectReference Include="..\..\src\TextQuest.CLI\TextQuest.CLI.csproj" />
 	</ItemGroup>
 
 </Project>
