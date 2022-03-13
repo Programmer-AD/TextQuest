@@ -6,6 +6,7 @@ namespace TextQuest.Domain.Objects
     {
         public string Name { get; set; }
 
+        public Location Location { get; set; }
         public IReadOnlyList<Quest> Quests { get; set; }
 
         public bool HasUncompletedQuest => Quests.Any(x => !x.Completed);

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TextQuest.Application.Interfaces;
+using TextQuest.Infrastructure.NameSetting;
 
 namespace TextQuest.Infrastructure
 {
@@ -6,7 +8,7 @@ namespace TextQuest.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services)
         {
-
+            services.AddSingleton<INameSetter, NameSetter>();
         }
     }
 }

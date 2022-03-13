@@ -6,9 +6,8 @@
         public IReadOnlyList<Quest> Quests { get; }
         public IReadOnlyList<Item> Items { get; }
 
-
         void MoveTo(Location newLocation);
-        void GiveQuestItems(Character reciever);
+        void ExchangeQuestItems(Character reciever);
         void PickQuest(Quest quest);
     }
 }

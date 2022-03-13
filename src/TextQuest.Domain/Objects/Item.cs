@@ -1,8 +1,9 @@
-﻿namespace TextQuest.Domain.Objects
+﻿using TextQuest.Domain.Interfaces;
+
+namespace TextQuest.Domain.Objects
 {
-    public class Item
+    public class Item : INameable
     {
-        public ItemType Type { get; set; }
-        public uint Count { get; set; }
+        public string Name { get; set; }
     }
 }

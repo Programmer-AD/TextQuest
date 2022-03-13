@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TextQuest.Application.Interfaces;
+using TextQuest.Application.Services;
 
 namespace TextQuest.Application
 {
@@ -6,7 +8,8 @@ namespace TextQuest.Application
     {
         public static void AddApplication(this IServiceCollection services)
         {
-
+            services.AddScoped<IWorldProvider, WorldProvider>();
+            services.AddScoped<IPlayerController, PlayerController>();
         }
     }
 }
