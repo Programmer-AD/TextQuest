@@ -1,33 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E6E92919-22B4-4E28-AA88-B19C2A12DABE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.Application", "src\TextQuest.Application\TextQuest.Application.csproj", "{A5711A49-B16F-4B5F-A317-3AC06DC46023}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Application", "src\TextQuest.Application\TextQuest.Application.csproj", "{A5711A49-B16F-4B5F-A317-3AC06DC46023}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.CLI", "src\TextQuest.CLI\TextQuest.CLI.csproj", "{F30877D5-99C7-4326-AD49-C034F9F9828C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.CLI", "src\TextQuest.CLI\TextQuest.CLI.csproj", "{F30877D5-99C7-4326-AD49-C034F9F9828C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.Domain", "src\TextQuest.Domain\TextQuest.Domain.csproj", "{B79F2E67-BF7C-4C03-806D-2611AB8A6649}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Domain", "src\TextQuest.Domain\TextQuest.Domain.csproj", "{B79F2E67-BF7C-4C03-806D-2611AB8A6649}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.Infrastructure", "src\TextQuest.Infrastructure\TextQuest.Infrastructure.csproj", "{E6BCE23C-DCA9-40CE-BA38-2648BEA054BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Infrastructure", "src\TextQuest.Infrastructure\TextQuest.Infrastructure.csproj", "{E6BCE23C-DCA9-40CE-BA38-2648BEA054BC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3E299CEF-6839-4E7A-97BC-E44D0A85D58B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.Application.UnitTests", "tests\TextQuest.Application.UnitTests\TextQuest.Application.UnitTests.csproj", "{EFE80AA5-F3B4-42D0-8EFA-55E4BEB7125C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Application.UnitTests", "tests\TextQuest.Application.UnitTests\TextQuest.Application.UnitTests.csproj", "{EFE80AA5-F3B4-42D0-8EFA-55E4BEB7125C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.Infrastructure.UnitTests", "tests\TextQuest.Infrastructure.UnitTests\TextQuest.Infrastructure.UnitTests.csproj", "{076421B3-0344-4A90-9B57-452785E4DECB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Infrastructure.UnitTests", "tests\TextQuest.Infrastructure.UnitTests\TextQuest.Infrastructure.UnitTests.csproj", "{076421B3-0344-4A90-9B57-452785E4DECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.CLI.UnitTests", "tests\TextQuest.CLI.UnitTests\TextQuest.CLI.UnitTests.csproj", "{384F0FCD-F0F6-464E-83E0-8922FD7EE870}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.CLI.UnitTests", "tests\TextQuest.CLI.UnitTests\TextQuest.CLI.UnitTests.csproj", "{384F0FCD-F0F6-464E-83E0-8922FD7EE870}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A5711A49-B16F-4B5F-A317-3AC06DC46023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -59,6 +56,9 @@ Global
 		{384F0FCD-F0F6-464E-83E0-8922FD7EE870}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{384F0FCD-F0F6-464E-83E0-8922FD7EE870}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A5711A49-B16F-4B5F-A317-3AC06DC46023} = {E6E92919-22B4-4E28-AA88-B19C2A12DABE}
 		{F30877D5-99C7-4326-AD49-C034F9F9828C} = {E6E92919-22B4-4E28-AA88-B19C2A12DABE}
@@ -67,5 +67,8 @@ Global
 		{EFE80AA5-F3B4-42D0-8EFA-55E4BEB7125C} = {3E299CEF-6839-4E7A-97BC-E44D0A85D58B}
 		{076421B3-0344-4A90-9B57-452785E4DECB} = {3E299CEF-6839-4E7A-97BC-E44D0A85D58B}
 		{384F0FCD-F0F6-464E-83E0-8922FD7EE870} = {3E299CEF-6839-4E7A-97BC-E44D0A85D58B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {666394AF-2CEF-41BD-BC5C-9E1C729BC8D2}
 	EndGlobalSection
 EndGlobal

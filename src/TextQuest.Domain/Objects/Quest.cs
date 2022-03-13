@@ -1,4 +1,4 @@
-﻿namespace TextQuest.Domain.Entities
+﻿namespace TextQuest.Domain.Objects
 {
     public class Quest
     {
