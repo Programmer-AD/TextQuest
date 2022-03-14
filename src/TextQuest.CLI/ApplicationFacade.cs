@@ -186,6 +186,7 @@ namespace TextQuest.CLI
                         catch (QuestAddingException) { }
                     }
                     Console.WriteLine($"В журнал добавлено {pickedCount} новых квестов");
+                    Console.ReadLine();
                 }
                 else
                 {
