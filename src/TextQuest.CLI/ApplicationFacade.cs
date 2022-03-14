@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using TextQuest.Application.Exceptions;
 using TextQuest.Application.Interfaces;
 using TextQuest.Application.Models;
 using TextQuest.CLI.Interfaces;
@@ -116,15 +117,104 @@ namespace TextQuest.CLI
                     (x, i) => $"\t{i + 1} Переход в \"{x.Name}\""));
 
             FlushToConsole();
-            var selected = GetSelection(worldProvider.World.Locations.Count);
+            var selected = GetSelection(worldProvider.World.Locations.Count + 1);
             if (selected != 0)
             {
-                selected--;
-                playerController.MoveTo(worldProvider.World.Locations[selected]);
+                var newLocation = worldProvider.World.Locations[--selected];
+                playerController.MoveTo(newLocation);
             }
         }
 
-        private void CharacterInteractMenu() { }
+        private void CharacterInteractMenu()
+        {
+            int selected;
+            do
+            {
+                stringBuilder.AppendLine("<<<Взаимодействие с пресонажами>>>")
+                    .AppendLine("\t0 Отмена")
+                    .AppendJoin("\r\n", playerController.CurrentLocation.Characters.Select(
+                        (x, i) => $"\t{i + 1} Взаимодействовать с {x.Name} {(x.Quests.All(x => x.Completed) ? "(Всё выполнено)" : "")}"));
+
+                FlushToConsole();
+                selected = GetSelection(playerController.CurrentLocation.Characters.Count + 1);
+                if (selected != 0)
+                {
+                    var character = playerController.CurrentLocation.Characters[--selected];
+                    ShowInteractionMenu(character);
+                }
+            } while (selected != 0);
+        }
+
+        private void ShowInteractionMenu(Character character)
+        {
+            stringBuilder.AppendLine($"<<<Взаимодействие с {character.Name}>>>")
+                .AppendLine("\t0 Отмена")
+                .AppendLine("\t1 Взять все доступные квесты")
+                .AppendLine("\t2 Обмен предметами");
+
+            FlushToConsole();
+            var selection = GetSelection(3);
+            switch (selection)
+            {
+                case 1:
+                    PickAvailableQuests(character);
+                    break;
+                case 2:
+                    ExchangeItems(character);
+                    break;
+            }
+        }
+
+        private void PickAvailableQuests(Character character)
+        {
+            var notCompletedQuests = character.Quests.Where(x => !x.Completed);
+            if (notCompletedQuests.Any())
+            {
+                var availableQuests = notCompletedQuests.Where(
+                    x => x.RequiredQuests.All(x => x.Completed));
+
+                if (availableQuests.Any())
+                {
+                    int pickedCount = 0;
+                    foreach (var quest in availableQuests)
+                    {
+                        try
+                        {
+                            playerController.PickQuest(quest);
+                            pickedCount++;
+                        }
+                        catch (QuestAddingException) { }
+                    }
+                    Console.WriteLine($"В журнал добавлено {pickedCount} новых квестов");
+                }
+                else
+                {
+                    var questRecomendation = notCompletedQuests.First()
+                        .RequiredQuests.First(x => !x.Completed);
+                    Console.WriteLine("Нет доступных квестов");
+                    Console.WriteLine($"Подсказка: сходите к {questRecomendation.Giver.Name} из {questRecomendation.Giver.Location.Name}");
+                    Console.ReadLine();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Все квесты выполнены!");
+                Console.ReadLine();
+            }
+        }
+
+        private void ExchangeItems(Character character)
+        {
+            try
+            {
+                playerController.ExchangeQuestItems(character);
+            }
+            catch (ItemExchangeException)
+            {
+                Console.WriteLine("Нет предметов или повода для обмена");
+                Console.ReadLine();
+            }
+        }
 
         private int GetSelection(int variantCount)
         {
