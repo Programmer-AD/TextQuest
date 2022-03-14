@@ -9,6 +9,7 @@ namespace TextQuest.Infrastructure
         public static void AddInfrastructure(this IServiceCollection services)
         {
             services.AddSingleton<INameGenerator, NameGenerator>();
+            services.AddSingleton<IRandom, RandomAdapter>();
         }
     }
 }
