@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using FluentAssertions;
+﻿using FluentAssertions;
+using NUnit.Framework;
 using TextQuest.Application.Services;
 
 namespace TextQuest.Application.UnitTests.Services

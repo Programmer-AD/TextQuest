@@ -1,6 +1,5 @@
 ﻿using TextQuest.Application.Exceptions;
 using TextQuest.Application.Interfaces;
-using TextQuest.Domain.Objects;
 
 namespace TextQuest.Application.Services
 {
@@ -61,7 +60,7 @@ namespace TextQuest.Application.Services
         {
             var playerItemSet = player.Items.ToHashSet();
             var quest = Quests.Where(
-                x => x.Giver == itemReciever 
+                x => x.Giver == itemReciever
                 && playerItemSet.IsSupersetOf(x.RequiredItems))
                 .FirstOrDefault();
 
