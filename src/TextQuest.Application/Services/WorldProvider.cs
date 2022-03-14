@@ -96,10 +96,9 @@ namespace TextQuest.Application.Services
             var questQueue = new Queue<Quest>(quests);
             while (questQueue.Count > 0)
             {
-                var name = GetUnusedName(NameGenerationParamsConstants.CharacterName);
                 var character = new Character()
                 {
-                    Name = name
+                    Name = GetUnusedName(NameGenerationParamsConstants.CharacterName)
                 };
                 AddCharacterQuests(character, questQueue, maxQuestsForCharacter);
                 characters.Add(character);
@@ -130,10 +129,9 @@ namespace TextQuest.Application.Services
             var characterQueue = new Queue<Character>(characters);
             while (characterQueue.Count > 0)
             {
-                var name = GetUnusedName(NameGenerationParamsConstants.LocationName);
                 var location = new Location()
                 {
-                    Name = name,
+                    Name = GetUnusedName(NameGenerationParamsConstants.LocationName),
                 };
                 SetLocationCharacters(location, characterQueue, maxCharactersInLocation);
                 locations.Add(location);
@@ -173,6 +171,7 @@ namespace TextQuest.Application.Services
                 name = nameGenerator.GetName(nameParams);
             } while (usedNames.Contains(name));
 
+            usedNames.Add(name);
             return name;
         }
     }
