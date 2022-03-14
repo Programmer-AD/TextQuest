@@ -4,9 +4,9 @@
     {
         public Character Giver { get; set; }
         public bool Completed { get; set; }
-        public IReadOnlyList<Quest> RequiredQuests { get; set; }
+        public List<Quest> RequiredQuests { get; set; } = new();
 
-        public IReadOnlyList<Item> RequiredItems { get; set; }
-        public IReadOnlyList<Item> ObtainedItems { get; set; }
+        public List<Item> RequiredItems { get; set; } = new();
+        public List<Item> ObtainedItems { get; set; } = new();
     }
 }

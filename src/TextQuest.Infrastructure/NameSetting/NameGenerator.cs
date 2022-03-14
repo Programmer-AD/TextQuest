@@ -1,12 +1,11 @@
 ﻿using TextQuest.Application.Interfaces;
 using TextQuest.Application.Models;
-using TextQuest.Domain.Interfaces;
 
 namespace TextQuest.Infrastructure.NameSetting
 {
-    internal class NameSetter : INameSetter
+    internal class NameGenerator : INameGenerator
     {
-        public void SetName(in NameGenerationParams generationParams, INameable nameable)
+        public string GetName(NameGenerationParams generationParams)
         {
             throw new NotImplementedException();
         }

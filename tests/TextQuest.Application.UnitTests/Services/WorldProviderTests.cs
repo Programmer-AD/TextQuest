@@ -9,18 +9,26 @@ namespace TextQuest.Application.UnitTests.Services
     [TestFixture]
     internal class WorldProviderTests
     {
-        private static readonly WorldCreationParams creationParams = new(5..10);
+        private static readonly WorldCreationParams creationParams = new(5..10, 3, 2);
 
-        private Mock<INameSetter> nameSetterMock;
-        private Mock<IRandomGenerator> randomGeneratorMock;
+        private Mock<INameGenerator> nameGeneratorMock;
+        private Mock<IRandom> randomMock;
         private WorldProvider worldProvider;
 
         [SetUp]
         public void SetUp()
         {
-            nameSetterMock = new Mock<INameSetter>();
-            randomGeneratorMock = new Mock<IRandomGenerator>();
-            worldProvider = new WorldProvider(randomGeneratorMock.Object, nameSetterMock.Object);
+            long nameCounter = 0;
+
+            nameGeneratorMock = new Mock<INameGenerator>();
+            nameGeneratorMock.Setup(x => x.GetName(It.IsAny<NameGenerationParams>()))
+                .Returns((NameGenerationParams _) => nameCounter++.ToString());
+
+            randomMock = new Mock<IRandom>();
+            randomMock.Setup(x => x.Next(It.IsAny<System.Range>()))
+                .Returns((System.Range range) => range.Start.Value);
+
+            worldProvider = new WorldProvider(randomMock.Object, nameGeneratorMock.Object);
         }
 
         [Test]

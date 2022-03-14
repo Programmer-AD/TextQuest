@@ -3,7 +3,7 @@
     public class Player
     {
         public Location Location { get; set; }
-        public IList<Quest> Quests { get; set; }
-        public IList<Item> Items { get; set; }
+        public List<Quest> Quests { get; set; } = new();
+        public List<Item> Items { get; set; } = new();
     }
 }

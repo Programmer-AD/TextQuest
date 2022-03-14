@@ -12,12 +12,12 @@ namespace TextQuest.Application.UnitTests.Services
         private static readonly Character questGiver = new()
         {
             Location = location,
-            Quests = new[] { uncompletedQuest, uncompletedQuest2, completedQuest },
+            Quests = new() { uncompletedQuest, uncompletedQuest2, completedQuest },
         };
         private static readonly Character otherQuestGiver = new()
         {
             Location = location,
-            Quests = new[] { uncompletedQuestFromOtherGiver }
+            Quests = new() { uncompletedQuestFromOtherGiver }
         };
         private static readonly Item item1 = new();
         private static readonly Item item2 = new();
@@ -25,31 +25,24 @@ namespace TextQuest.Application.UnitTests.Services
         {
             Completed = false,
             Giver = questGiver,
-            RequiredQuests = Array.Empty<Quest>(),
-            ObtainedItems = new[] { item1 },
-            RequiredItems = Array.Empty<Item>(),
+            ObtainedItems = new() { item1 },
         };
         private static readonly Quest uncompletedQuest2 = new()
         {
             Completed = false,
             Giver = questGiver,
-            RequiredQuests = Array.Empty<Quest>(),
-            ObtainedItems = new[] { item2 },
-            RequiredItems = new[] { item1 },
+            ObtainedItems = new() { item2 },
+            RequiredItems = new() { item1 },
         };
         private static readonly Quest uncompletedQuestFromOtherGiver = new()
         {
             Completed = false,
             Giver = otherQuestGiver,
-            RequiredQuests = Array.Empty<Quest>(),
-            ObtainedItems = Array.Empty<Item>(),
-            RequiredItems = Array.Empty<Item>(),
         };
         private static readonly Quest completedQuest = new()
         {
             Completed = true,
             Giver = questGiver,
-            RequiredQuests = Array.Empty<Quest>(),
         };
 
 
@@ -215,7 +208,7 @@ namespace TextQuest.Application.UnitTests.Services
             {
                 Completed = false,
                 Giver = questGiver,
-                RequiredQuests = new[] { uncompletedQuest }
+                RequiredQuests = new() { uncompletedQuest }
             };
 
             playerController.Invoking(x => x.PickQuest(questWithRequirement))

@@ -8,7 +8,7 @@ namespace TextQuest.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services)
         {
-            services.AddSingleton<INameSetter, NameSetter>();
+            services.AddSingleton<INameGenerator, NameGenerator>();
         }
     }
 }
