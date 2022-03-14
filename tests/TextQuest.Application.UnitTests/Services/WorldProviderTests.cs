@@ -20,15 +20,15 @@ namespace TextQuest.Application.UnitTests.Services
         {
             long nameCounter = 0;
 
-            nameGeneratorMock = new Mock<INameGenerator>();
+            nameGeneratorMock = new();
             nameGeneratorMock.Setup(x => x.GetName(It.IsAny<NameGenerationParams>()))
                 .Returns((NameGenerationParams _) => nameCounter++.ToString());
 
-            randomMock = new Mock<IRandom>();
+            randomMock = new ();
             randomMock.Setup(x => x.Next(It.IsAny<System.Range>()))
                 .Returns((System.Range range) => range.Start.Value);
 
-            worldProvider = new WorldProvider(randomMock.Object, nameGeneratorMock.Object);
+            worldProvider = new (randomMock.Object, nameGeneratorMock.Object);
         }
 
         [Test]

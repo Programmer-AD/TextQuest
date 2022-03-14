@@ -57,7 +57,7 @@ namespace TextQuest.Application.UnitTests.Services
 
             completedQuest.Completed = true;
 
-            playerController = new PlayerController();
+            playerController = new ();
         }
 
         [Test]
