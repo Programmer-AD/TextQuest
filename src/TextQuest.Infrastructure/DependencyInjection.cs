@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TextQuest.Application.Interfaces;
-using TextQuest.Infrastructure.NameSetting;
+using TextQuest.Infrastructure.Services;
 
 namespace TextQuest.Infrastructure
 {

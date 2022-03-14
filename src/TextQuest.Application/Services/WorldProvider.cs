@@ -1,4 +1,5 @@
 ﻿using TextQuest.Application.Interfaces;
+using TextQuest.Domain.Interfaces;
 
 namespace TextQuest.Application.Services
 {
@@ -25,6 +26,11 @@ namespace TextQuest.Application.Services
             var characters = CreateCharacters(quests, creationParams.MaxQuestsForCharacter);
             var locations = CreateLocations(characters, creationParams.MaxCharactersInLocation);
             var world = CreateWorld(locations);
+
+            world.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
+            SetNames(locations, NameGenerationParamsConstants.LocationName);
+            SetNames(characters, NameGenerationParamsConstants.CharacterName);
+            SetNames(items, NameGenerationParamsConstants.ItemName);
 
             World = world;
         }
@@ -76,10 +82,7 @@ namespace TextQuest.Application.Services
 
             foreach (var (from, to) in links)
             {
-                var item = new Item()
-                {
-                    Name = GetUnusedName(NameGenerationParamsConstants.ItemName)
-                };
+                var item = new Item();
                 items.Add(item);
 
                 from.ObtainedItems.Add(item);
@@ -96,10 +99,7 @@ namespace TextQuest.Application.Services
             var questQueue = new Queue<Quest>(quests);
             while (questQueue.Count > 0)
             {
-                var character = new Character()
-                {
-                    Name = GetUnusedName(NameGenerationParamsConstants.CharacterName)
-                };
+                var character = new Character();
                 AddCharacterQuests(character, questQueue, maxQuestsForCharacter);
                 characters.Add(character);
             }
@@ -129,10 +129,7 @@ namespace TextQuest.Application.Services
             var characterQueue = new Queue<Character>(characters);
             while (characterQueue.Count > 0)
             {
-                var location = new Location()
-                {
-                    Name = GetUnusedName(NameGenerationParamsConstants.LocationName),
-                };
+                var location = new Location();
                 SetLocationCharacters(location, characterQueue, maxCharactersInLocation);
                 locations.Add(location);
             }
@@ -157,10 +154,18 @@ namespace TextQuest.Application.Services
 
         private World CreateWorld(List<Location> locations)
         {
-            var name = GetUnusedName(NameGenerationParamsConstants.WorldName);
-            var world = new World() { Name = name };
+            var world = new World();
             world.Locations.AddRange(locations);
             return world;
+        }
+
+        private void SetNames(IEnumerable<INameable> nameables, NameGenerationParams nameParams)
+        {
+            foreach (var nameable in nameables)
+            {
+                var name = GetUnusedName(nameParams);
+                nameable.Name = name;
+            }
         }
 
         private string GetUnusedName(NameGenerationParams nameParams)

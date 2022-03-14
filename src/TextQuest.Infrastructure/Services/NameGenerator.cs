@@ -1,7 +1,7 @@
 ﻿using TextQuest.Application.Interfaces;
 using TextQuest.Application.Models;
 
-namespace TextQuest.Infrastructure.NameSetting
+namespace TextQuest.Infrastructure.Services
 {
     internal class NameGenerator : INameGenerator
     {
