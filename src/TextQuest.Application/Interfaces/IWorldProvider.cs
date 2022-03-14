@@ -4,6 +4,6 @@
     {
         public World World { get; }
 
-        void CreateNew();
+        void CreateNew(WorldCreationParams creationParams);
     }
 }
