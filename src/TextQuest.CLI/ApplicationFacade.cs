@@ -58,7 +58,7 @@ namespace TextQuest.CLI
 
             stringBuilder.AppendLine("Действия: ")
                 .AppendLine("\t0 Изменить локацию")
-                .AppendLine("\t1 Взаимодействовать с пресонажем");
+                .AppendLine("\t1 Взаимодействовать с персонажем");
 
             FlushToConsole();
             var selection = GetSelection(2);
@@ -92,6 +92,7 @@ namespace TextQuest.CLI
 
             stringBuilder.AppendLine("Награда: ");
             ShowItemList(quest.ObtainedItems);
+
             stringBuilder.AppendLine();
         }
 
@@ -209,6 +210,8 @@ namespace TextQuest.CLI
             try
             {
                 playerController.ExchangeQuestItems(character);
+                Console.WriteLine("Обмен успешен");
+                Console.ReadLine();
             }
             catch (ItemExchangeException)
             {
