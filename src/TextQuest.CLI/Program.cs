@@ -8,6 +8,8 @@ internal static class Program
 {
     private static void Main()
     {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+
         using var serviceProvider = GetServiceProvider();
 
         var app = serviceProvider.GetRequiredService<IApplication>();
