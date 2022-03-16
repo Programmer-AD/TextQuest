@@ -8,7 +8,14 @@ internal static class Program
 {
     private static void Main()
     {
-        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.InputEncoding =
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+        Console.TreatControlCAsInput = true;
+
+        Console.Title = "TextQuest";
+        Console.BackgroundColor = ConsoleColor.Black;
+        Console.ForegroundColor = ConsoleColor.Green;
 
         using var serviceProvider = GetServiceProvider();
 

@@ -12,14 +12,17 @@ namespace TextQuest.CLI
         private readonly IWorldProvider worldProvider;
         private readonly IPlayerController playerController;
         private readonly StringBuilder stringBuilder;
+        private readonly StringBuilder extraMessageStringBuilder;
 
-        private IList<Quest> allQuests;
+        private World World => worldProvider.World;
+        private Location PlayerLocation => playerController.CurrentLocation;
 
         public ApplicationFacade(IWorldProvider worldProvider, IPlayerController playerController)
         {
             this.worldProvider = worldProvider;
             this.playerController = playerController;
-            stringBuilder = new StringBuilder();
+            stringBuilder = new();
+            extraMessageStringBuilder = new();
         }
 
         public void Run()
@@ -29,28 +32,23 @@ namespace TextQuest.CLI
             FlushToConsole();
 
             worldProvider.CreateNew(creationParams);
-            playerController.MoveTo(worldProvider.World.Locations[0]);
-
-            allQuests = worldProvider.World.Locations
-                .SelectMany(x => x.Characters).SelectMany(x => x.Quests).ToList();
+            playerController.MoveTo(World.Locations[0]);
 
             do
             {
                 MainMenu();
-            } while (CompletedQuest < allQuests.Count);
+            } while (World.CompletedQuestCount < World.QuestCount);
 
-            Console.WriteLine("Игра пройдена!");
-            Console.ReadLine();
+            PrintExtraMessage("Игра пройдена!");
         }
-
-        private int CompletedQuest => allQuests.Count(x => x.Completed);
 
         private void MainMenu()
         {
             stringBuilder
-                .AppendLine($"Мир: \"{worldProvider.World.Name}\"")
-                .AppendLine($"Текущая локация: \"{playerController.CurrentLocation.Name}\"")
-                .AppendLine($"Прогресс: {CompletedQuest}/{allQuests.Count}")
+                .AppendLine($"Мир: \"{World.Name}\"")
+                .AppendLine($"Текущая локация: \"{PlayerLocation.Name}\"" +
+                $" ({PlayerLocation.CompletedQuestCount}/{PlayerLocation.QuestCount})")
+                .AppendLine($"Прогресс: {World.CompletedQuestCount}/{World.QuestCount}")
                 .AppendLine();
 
             ShowActiveQuests();
@@ -58,7 +56,7 @@ namespace TextQuest.CLI
 
             stringBuilder.AppendLine("Действия: ")
                 .AppendLine("\t0 Изменить локацию")
-                .AppendLine("\t1 Взаимодействовать с персонажем");
+                .AppendLine("\t1 Взаимодействовать с персонажами");
 
             FlushToConsole();
             var selection = GetSelection(2);
@@ -74,11 +72,12 @@ namespace TextQuest.CLI
         }
         private void ShowActiveQuests()
         {
-            stringBuilder.AppendLine("<<<Активные квесты>>")
-                .AppendLine();
+            stringBuilder.AppendLine("<<<Активные квесты>>");
+
             foreach (var quest in playerController.Quests)
             {
                 ShowQuest(quest);
+                stringBuilder.AppendLine();
             }
         }
 
@@ -86,14 +85,14 @@ namespace TextQuest.CLI
         {
             stringBuilder.AppendLine("<<Квест>>")
                     .AppendLine($"Для {quest.Giver.Name}")
-                    .AppendLine($"Из \"{quest.Giver.Location.Name}\"")
-                    .AppendLine("Необходимо: ");
+                    .AppendLine($"Из \"{quest.Giver.Location.Name}\"");
+
+            stringBuilder.AppendLine("Необходимо: ");
             ShowItemList(quest.RequiredItems);
+            stringBuilder.AppendLine();
 
             stringBuilder.AppendLine("Награда: ");
             ShowItemList(quest.ObtainedItems);
-
-            stringBuilder.AppendLine();
         }
 
         private void ShowPlayerItems()
@@ -114,14 +113,14 @@ namespace TextQuest.CLI
         {
             stringBuilder.AppendLine("<<<Смена локации>>>")
                 .AppendLine("\t0 Отмена")
-                .AppendJoin("\r\n", worldProvider.World.Locations.Select(
-                    (x, i) => $"\t{i + 1} Переход в \"{x.Name}\""));
+                .AppendJoin("\r\n", World.Locations.Select(
+                    (x, i) => $"\t{i + 1} Переход в \"{x.Name}\" ({x.CompletedQuestCount}/{x.QuestCount})"));
 
             FlushToConsole();
-            var selected = GetSelection(worldProvider.World.Locations.Count + 1);
+            var selected = GetSelection(World.Locations.Count + 1);
             if (selected != 0)
             {
-                var newLocation = worldProvider.World.Locations[--selected];
+                var newLocation = World.Locations[selected - 1];
                 playerController.MoveTo(newLocation);
             }
         }
@@ -131,16 +130,16 @@ namespace TextQuest.CLI
             int selected;
             do
             {
-                stringBuilder.AppendLine("<<<Взаимодействие с пресонажами>>>")
+                stringBuilder.AppendLine("<<<Взаимодействие с персонажами>>>")
                     .AppendLine("\t0 Отмена")
-                    .AppendJoin("\r\n", playerController.CurrentLocation.Characters.Select(
-                        (x, i) => $"\t{i + 1} Взаимодействовать с {x.Name} {(x.Quests.All(x => x.Completed) ? "(Всё выполнено)" : "")}"));
+                    .AppendJoin(Environment.NewLine, playerController.CurrentLocation.Characters.Select(
+                        (x, i) => $"\t{i + 1} Взаимодействовать с {x.Name} ({x.CompletedQuestCount}/{x.QuestCount})"));
 
                 FlushToConsole();
                 selected = GetSelection(playerController.CurrentLocation.Characters.Count + 1);
                 if (selected != 0)
                 {
-                    var character = playerController.CurrentLocation.Characters[--selected];
+                    var character = playerController.CurrentLocation.Characters[selected - 1];
                     ShowInteractionMenu(character);
                 }
             } while (selected != 0);
@@ -148,32 +147,35 @@ namespace TextQuest.CLI
 
         private void ShowInteractionMenu(Character character)
         {
-            stringBuilder.AppendLine($"<<<Взаимодействие с {character.Name}>>>")
-                .AppendLine("\t0 Отмена")
-                .AppendLine("\t1 Взять все доступные квесты")
-                .AppendLine("\t2 Обмен предметами");
+            int selection;
 
-            FlushToConsole();
-            var selection = GetSelection(3);
-            switch (selection)
+            do
             {
-                case 1:
-                    PickAvailableQuests(character);
-                    break;
-                case 2:
-                    ExchangeItems(character);
-                    break;
-            }
+                stringBuilder.AppendLine($"<<<Взаимодействие с {character.Name}>>>")
+                    .AppendLine("\t0 Отмена")
+                    .AppendLine("\t1 Взять все доступные квесты")
+                    .AppendLine("\t2 Обмен предметами");
+
+                FlushToConsole();
+
+                selection = GetSelection(3);
+                switch (selection)
+                {
+                    case 1:
+                        PickAvailableQuests(character);
+                        break;
+                    case 2:
+                        ExchangeItems(character);
+                        break;
+                }
+            } while (selection != 0);
         }
 
         private void PickAvailableQuests(Character character)
         {
-            var notCompletedQuests = character.Quests.Where(x => !x.Completed);
-            if (notCompletedQuests.Any())
+            if (character.CompletedQuestCount < character.QuestCount)
             {
-                var availableQuests = notCompletedQuests.Where(
-                    x => x.RequiredQuests.All(x => x.Completed));
-
+                var availableQuests = character.AvailableQuests;
                 if (availableQuests.Any())
                 {
                     int pickedCount = 0;
@@ -186,22 +188,18 @@ namespace TextQuest.CLI
                         }
                         catch (QuestAddingException) { }
                     }
-                    Console.WriteLine($"В журнал добавлено {pickedCount} новых квестов");
-                    Console.ReadLine();
+                    PrintExtraMessage($"В журнал добавлено {pickedCount} новых квестов");
                 }
                 else
                 {
-                    var questRecomendation = notCompletedQuests.First()
-                        .RequiredQuests.First(x => !x.Completed);
-                    Console.WriteLine("Нет доступных квестов");
-                    Console.WriteLine($"Подсказка: сходите к {questRecomendation.Giver.Name} из {questRecomendation.Giver.Location.Name}");
-                    Console.ReadLine();
+                    var recomendedGiver = character.RecomendedQuest.Giver;
+                    PrintExtraMessage("Нет доступных квестов" + Environment.NewLine +
+                        $"Подсказка: сходите к {recomendedGiver.Name} из {recomendedGiver.Location.Name}");
                 }
             }
             else
             {
-                Console.WriteLine("Все квесты выполнены!");
-                Console.ReadLine();
+                PrintExtraMessage("Все квесты выполнены!");
             }
         }
 
@@ -210,13 +208,11 @@ namespace TextQuest.CLI
             try
             {
                 playerController.ExchangeQuestItems(character);
-                Console.WriteLine("Обмен успешен");
-                Console.ReadLine();
+                PrintExtraMessage("Обмен успешен");
             }
             catch (ItemExchangeException)
             {
-                Console.WriteLine("Нет предметов или повода для обмена");
-                Console.ReadLine();
+                PrintExtraMessage("Нет предметов или повода для обмена");
             }
         }
 
@@ -242,7 +238,7 @@ namespace TextQuest.CLI
                 }
                 else
                 {
-                    Console.WriteLine("Значение должно быть целым числом");
+                    Console.WriteLine("Значение должно быть целым числом!");
                 }
             } while (!selected);
             return selection;
@@ -254,6 +250,19 @@ namespace TextQuest.CLI
             Console.Clear();
             Console.WriteLine(text);
             stringBuilder.Clear();
+        }
+
+        private void PrintExtraMessage(string text)
+        {
+            extraMessageStringBuilder.Clear()
+                .AppendLine()
+                .AppendLine("[Информация]")
+                .AppendLine(text)
+                .AppendLine()
+                .Append("(Нажмите Enter для продолжения)");
+
+            Console.Write(extraMessageStringBuilder.ToString());
+            Console.ReadLine();
         }
     }
 }

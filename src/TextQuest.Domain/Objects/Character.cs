@@ -11,7 +11,9 @@ namespace TextQuest.Domain.Objects
         public int QuestCount => Quests.Count;
         public int CompletedQuestCount => Quests.Count(x => x.Completed);
 
-        public IEnumerable<Quest> PickableQuests => Quests.Where(x => x.RequiredQuests.All(x => x.Completed));
+        public IEnumerable<Quest> AvailableQuests => 
+            Quests.Where(x => !x.Completed && x.RequiredQuests.All(x => x.Completed));
+
         public Quest RecomendedQuest =>
             Quests.FirstOrDefault(x => !x.Completed)
             .RequiredQuests.FirstOrDefault(x => !x.Completed);
