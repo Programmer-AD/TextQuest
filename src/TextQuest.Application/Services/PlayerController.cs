@@ -18,9 +18,9 @@ namespace TextQuest.Application.Services
 
         public Location CurrentLocation => player.Location;
 
-        public IReadOnlyList<Quest> Quests => (IReadOnlyList<Quest>)player.Quests;
+        public IReadOnlyList<Quest> Quests => player.Quests;
 
-        public IReadOnlyList<Item> Items => (IReadOnlyList<Item>)player.Items;
+        public IReadOnlyList<Item> Items => player.Items;
 
         public void ExchangeQuestItems(Character reciever)
         {

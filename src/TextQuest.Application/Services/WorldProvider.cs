@@ -64,29 +64,23 @@ namespace TextQuest.Application.Services
                 requiredQuests.Add(requiredQuest);
             }
 
-            quest.RequiredQuests = requiredQuests.ToList();
+            quest.RequiredQuests.AddRange(requiredQuests);
         }
 
         private List<Item> CreateItems(List<Quest> quests)
         {
             var items = new List<Item>();
 
-            var links = new List<(Quest from, Quest to)>();
             foreach (var toQuest in quests)
             {
                 foreach (var fromQuest in toQuest.RequiredQuests)
                 {
-                    links.Add((fromQuest, toQuest));
+                    var item = new Item();
+                    items.Add(item);
+
+                    fromQuest.ObtainedItems.Add(item);
+                    toQuest.RequiredItems.Add(item);
                 }
-            }
-
-            foreach (var (from, to) in links)
-            {
-                var item = new Item();
-                items.Add(item);
-
-                from.ObtainedItems.Add(item);
-                to.RequiredItems.Add(item);
             }
 
             return items;
