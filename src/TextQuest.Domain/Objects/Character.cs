@@ -7,5 +7,13 @@ namespace TextQuest.Domain.Objects
         public string Name { get; set; }
         public Location Location { get; set; }
         public List<Quest> Quests { get; set; } = new();
+
+        public int QuestCount => Quests.Count;
+        public int CompletedQuestCount => Quests.Count(x => x.Completed);
+
+        public IEnumerable<Quest> PickableQuests => Quests.Where(x => x.RequiredQuests.All(x => x.Completed));
+        public Quest RecomendedQuest =>
+            Quests.FirstOrDefault(x => !x.Completed)
+            .RequiredQuests.FirstOrDefault(x => !x.Completed);
     }
 }
