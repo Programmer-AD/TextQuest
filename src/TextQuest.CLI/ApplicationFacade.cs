@@ -191,9 +191,16 @@ namespace TextQuest.CLI
                 }
                 else
                 {
-                    var recomendedGiver = character.RecomendedQuest.Giver;
-                    PrintExtraMessage("Нет новых доступных квестов" + Environment.NewLine +
-                        $"Подсказка: сходите к {recomendedGiver.Name} из {recomendedGiver.Location.Name}");
+                    var recomendedGiver = character.RecomendedQuest?.Giver;
+                    if (recomendedGiver != null)
+                    {
+                        PrintExtraMessage("Нет невзятых доступных квестов" + Environment.NewLine +
+                            $"Подсказка: сходите к {recomendedGiver.Name} из {recomendedGiver.Location.Name}");
+                    }
+                    else
+                    {
+                        PrintExtraMessage("Все доступные квесты взяты");
+                    }
                 }
             }
             else
