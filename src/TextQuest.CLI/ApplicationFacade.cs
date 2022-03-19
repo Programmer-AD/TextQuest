@@ -3,6 +3,7 @@ using TextQuest.Application.Exceptions;
 using TextQuest.Application.Interfaces;
 using TextQuest.Application.Models;
 using TextQuest.CLI.Interfaces;
+using TextQuest.Domain.Common;
 using TextQuest.Domain.Objects;
 
 namespace TextQuest.CLI
@@ -27,7 +28,7 @@ namespace TextQuest.CLI
 
         public void Run()
         {
-            var creationParams = new WorldCreationParams(20..40, 4, 6);
+            var creationParams = new WorldCreationParams(20..40, 5..15, 10, 4, 6);
             stringBuilder.AppendLine("Генерация...");
             FlushToConsole();
 
@@ -102,11 +103,11 @@ namespace TextQuest.CLI
             stringBuilder.AppendLine();
         }
 
-        private void ShowItemList(IEnumerable<Item> items)
+        private void ShowItemList(IEnumerable<Counted<Item>> items)
         {
-            foreach (var item in items)
+            foreach (var (item, count) in items)
             {
-                stringBuilder.AppendLine($"\t- \"{item.Name}\"");
+                stringBuilder.AppendLine($"\t- {count} * \"{item.Name}\"");
             }
         }
         private void ChangeLocationMenu()
@@ -175,26 +176,31 @@ namespace TextQuest.CLI
         {
             if (character.CompletedQuestCount < character.QuestCount)
             {
-                var availableQuests = character.AvailableQuests;
+                var availableQuests = character.AvailableQuests
+                    .Where(x => !playerController.HasQuest(x));
+
                 if (availableQuests.Any())
                 {
                     int pickedCount = 0;
                     foreach (var quest in availableQuests)
                     {
-                        try
-                        {
-                            playerController.PickQuest(quest);
-                            pickedCount++;
-                        }
-                        catch (QuestAddingException) { }
+                        playerController.PickQuest(quest);
+                        pickedCount++;
                     }
                     PrintExtraMessage($"В журнал добавлено {pickedCount} новых квестов");
                 }
                 else
                 {
-                    var recomendedGiver = character.RecomendedQuest.Giver;
-                    PrintExtraMessage("Нет доступных квестов" + Environment.NewLine +
-                        $"Подсказка: сходите к {recomendedGiver.Name} из {recomendedGiver.Location.Name}");
+                    var recomendedGiver = character.RecomendedQuest?.Giver;
+                    if (recomendedGiver != null)
+                    {
+                        PrintExtraMessage("Нет невзятых доступных квестов" + Environment.NewLine +
+                            $"Подсказка: сходите к {recomendedGiver.Name} из {recomendedGiver.Location.Name}");
+                    }
+                    else
+                    {
+                        PrintExtraMessage("Все доступные квесты взяты");
+                    }
                 }
             }
             else

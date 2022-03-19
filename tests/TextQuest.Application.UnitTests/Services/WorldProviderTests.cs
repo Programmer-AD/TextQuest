@@ -9,7 +9,7 @@ namespace TextQuest.Application.UnitTests.Services
     [TestFixture]
     internal class WorldProviderTests
     {
-        private static readonly WorldCreationParams creationParams = new(5..10, 3, 2);
+        private static readonly WorldCreationParams creationParams = new(5..10, 3..5, 10, 3, 2);
 
         private Mock<INameGenerator> nameGeneratorMock;
         private Mock<IRandom> randomMock;

@@ -9,28 +9,28 @@ namespace TextQuest.Application.Services
 
         public PlayerController()
         {
-            player = new Player
-            {
-                Items = new List<Item>(),
-                Quests = new List<Quest>()
-            };
+            player = new();
         }
 
         public Location CurrentLocation => player.Location;
 
-        public IReadOnlyList<Quest> Quests => player.Quests;
+        public IEnumerable<Quest> Quests => player.Quests;
 
-        public IReadOnlyList<Item> Items => player.Items;
+        public IEnumerable<Counted<Item>> Items => player.Items;
 
         public void ExchangeQuestItems(Character reciever)
         {
             CheckCanExchangeItems(reciever);
             var quest = GetExchangeQuest(reciever);
 
-            var playerItemSet = player.Items.ToHashSet();
-            playerItemSet.ExceptWith(quest.RequiredItems);
-            playerItemSet.UnionWith(quest.ObtainedItems);
-            player.Items = playerItemSet.ToList();
+            foreach (var item in quest.RequiredItems)
+            {
+                player.Items.Remove(item);
+            }
+            foreach (var item in quest.ObtainedItems)
+            {
+                player.Items.Add(item);
+            }
 
             quest.Completed = true;
             player.Quests.Remove(quest);
@@ -48,6 +48,11 @@ namespace TextQuest.Application.Services
             player.Quests.Add(quest);
         }
 
+        public bool HasQuest(Quest quest)
+        {
+            return player.Quests.Contains(quest);
+        }
+
         private void CheckCanExchangeItems(Character reciever)
         {
             if (reciever.Location != player.Location)
@@ -58,11 +63,10 @@ namespace TextQuest.Application.Services
 
         private Quest GetExchangeQuest(Character itemReciever)
         {
-            var playerItemSet = player.Items.ToHashSet();
-            var quest = Quests.Where(
+            var quest = Quests.FirstOrDefault(
                 x => x.Giver == itemReciever
-                && playerItemSet.IsSupersetOf(x.RequiredItems))
-                .FirstOrDefault();
+                && x.RequiredItems.All(
+                    item => player.Items.Contains(item)));
 
             if (quest == null)
             {
@@ -96,7 +100,7 @@ namespace TextQuest.Application.Services
                 (quest => quest.RequiredQuests.Any(x => !x.Completed), "Not all required quests completed!");
 
             yield return
-                (quest => player.Quests.Contains(quest), "Quest already added!");
+                (HasQuest, "Quest already added!");
         }
     }
 }

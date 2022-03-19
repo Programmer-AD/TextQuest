@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Application.UnitT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextQuest.Infrastructure.UnitTests", "tests\TextQuest.Infrastructure.UnitTests\TextQuest.Infrastructure.UnitTests.csproj", "{076421B3-0344-4A90-9B57-452785E4DECB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuest.Domain.UnitTests", "tests\TextQuest.Domain.UnitTests\TextQuest.Domain.UnitTests.csproj", "{F363F5C2-D42F-4D77-ADF0-ED18506E64AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{076421B3-0344-4A90-9B57-452785E4DECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{076421B3-0344-4A90-9B57-452785E4DECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{076421B3-0344-4A90-9B57-452785E4DECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F363F5C2-D42F-4D77-ADF0-ED18506E64AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F363F5C2-D42F-4D77-ADF0-ED18506E64AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F363F5C2-D42F-4D77-ADF0-ED18506E64AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F363F5C2-D42F-4D77-ADF0-ED18506E64AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{E6BCE23C-DCA9-40CE-BA38-2648BEA054BC} = {E6E92919-22B4-4E28-AA88-B19C2A12DABE}
 		{EFE80AA5-F3B4-42D0-8EFA-55E4BEB7125C} = {3E299CEF-6839-4E7A-97BC-E44D0A85D58B}
 		{076421B3-0344-4A90-9B57-452785E4DECB} = {3E299CEF-6839-4E7A-97BC-E44D0A85D58B}
+		{F363F5C2-D42F-4D77-ADF0-ED18506E64AD} = {3E299CEF-6839-4E7A-97BC-E44D0A85D58B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {666394AF-2CEF-41BD-BC5C-9E1C729BC8D2}

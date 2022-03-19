@@ -1,5 +1,6 @@
 ﻿using TextQuest.Application.Interfaces;
 using TextQuest.Domain.Interfaces;
+using TextQuest.Domain.Objects;
 
 namespace TextQuest.Application.Services
 {
@@ -22,17 +23,17 @@ namespace TextQuest.Application.Services
         public void CreateNew(WorldCreationParams creationParams)
         {
             var quests = CreateQuests(creationParams.QuestCount);
-            var items = CreateItems(quests);
+            var items = CreateItems(creationParams.ItemTypeCount);
+            DistributeItems(quests, items, creationParams.MaxItemCount);
             var characters = CreateCharacters(quests, creationParams.MaxQuestsForCharacter);
             var locations = CreateLocations(characters, creationParams.MaxCharactersInLocation);
-            var world = CreateWorld(locations);
+            World = CreateWorld(locations);
 
-            world.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
+
+            World.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
             SetNames(locations, NameGenerationParamsConstants.LocationName);
             SetNames(characters, NameGenerationParamsConstants.CharacterName);
             SetNames(items, NameGenerationParamsConstants.ItemName);
-
-            World = world;
         }
 
         private List<Quest> CreateQuests(Range questCountRange)
@@ -67,23 +68,34 @@ namespace TextQuest.Application.Services
             quest.RequiredQuests.AddRange(requiredQuests);
         }
 
-        private List<Item> CreateItems(List<Quest> quests)
+        private List<Item> CreateItems(Range itemTypeCountRange)
         {
+            var itemTypeCount = random.Next(itemTypeCountRange);
             var items = new List<Item>();
 
+            for (int i = 0; i < itemTypeCount; i++)
+            {
+                var item = new Item();
+                items.Add(item);
+            }
+
+            return items;
+        }
+
+        private void DistributeItems(List<Quest> quests, List<Item> items, int maxItemCount)
+        {
             foreach (var toQuest in quests)
             {
                 foreach (var fromQuest in toQuest.RequiredQuests)
                 {
-                    var item = new Item();
-                    items.Add(item);
+                    var item = random.NextElement(items);
+                    var count = (uint)random.Next(1..maxItemCount);
+                    var countedItem = new Counted<Item>(item, count);
 
-                    fromQuest.ObtainedItems.Add(item);
-                    toQuest.RequiredItems.Add(item);
+                    fromQuest.ObtainedItems.Add(countedItem);
+                    toQuest.RequiredItems.Add(countedItem);
                 }
             }
-
-            return items;
         }
 
         private List<Character> CreateCharacters(List<Quest> quests, int maxQuestsForCharacter)

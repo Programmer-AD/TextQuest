@@ -1,6 +1,4 @@
-﻿using TextQuest.Domain.Interfaces;
-
-namespace TextQuest.Domain.Objects
+﻿namespace TextQuest.Domain.Objects
 {
     public class World : INameable
     {
