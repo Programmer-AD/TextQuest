@@ -11,8 +11,6 @@ internal static class Program
         Console.InputEncoding =
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        Console.TreatControlCAsInput = true;
-
         Console.Title = "TextQuest";
         Console.BackgroundColor = ConsoleColor.Black;
         Console.ForegroundColor = ConsoleColor.Green;
