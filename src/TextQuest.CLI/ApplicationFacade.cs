@@ -3,6 +3,7 @@ using TextQuest.Application.Exceptions;
 using TextQuest.Application.Interfaces;
 using TextQuest.Application.Models;
 using TextQuest.CLI.Interfaces;
+using TextQuest.Domain.Common;
 using TextQuest.Domain.Objects;
 
 namespace TextQuest.CLI
@@ -102,11 +103,11 @@ namespace TextQuest.CLI
             stringBuilder.AppendLine();
         }
 
-        private void ShowItemList(IEnumerable<Item> items)
+        private void ShowItemList(IEnumerable<Counted<Item>> items)
         {
-            foreach (var item in items)
+            foreach (var (item, count) in items)
             {
-                stringBuilder.AppendLine($"\t- \"{item.Name}\"");
+                stringBuilder.AppendLine($"\t- {count} * \"{item.Name}\"");
             }
         }
         private void ChangeLocationMenu()

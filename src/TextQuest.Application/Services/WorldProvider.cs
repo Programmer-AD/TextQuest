@@ -78,8 +78,8 @@ namespace TextQuest.Application.Services
                     var item = new Item();
                     items.Add(item);
 
-                    fromQuest.ObtainedItems.Add(item);
-                    toQuest.RequiredItems.Add(item);
+                    fromQuest.ObtainedItems.Add(new(item,1));
+                    toQuest.RequiredItems.Add(new(item,1));
                 }
             }
 

@@ -19,8 +19,8 @@ namespace TextQuest.Application.UnitTests.Services
             Location = location,
             Quests = new() { uncompletedQuestFromOtherGiver }
         };
-        private static readonly Item item1 = new();
-        private static readonly Item item2 = new();
+        private static readonly Counted<Item> item1 = new(new Item(), 1);
+        private static readonly Counted<Item> item2 = new(new Item(), 1);
         private static readonly Quest uncompletedQuest = new()
         {
             Completed = false,

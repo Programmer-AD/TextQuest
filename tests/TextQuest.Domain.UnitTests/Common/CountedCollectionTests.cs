@@ -34,22 +34,22 @@ namespace TextQuest.Domain.UnitTests.Common
         }
 
         [Test]
-        public void Add_WhenCountGreaterThenZero_AddItemEquivalent()
+        public void Add_WhenCountGreaterThenZero_AddItem()
         {
             collection.Add(item1);
 
-            collection.Should().ContainEquivalentOf(item1);
+            collection.Should().Contain(item1);
         }
 
         [Test]
-        public void Add_WhenAddingTwoDifferent_AddEquivalentsOfBoth()
+        public void Add_WhenAddingTwoDifferent_AddBoth()
         {
             collection.Add(item1);
 
             collection.Add(item2);
 
-            collection.Should().ContainEquivalentOf(item1)
-                .And.ContainEquivalentOf(item2);
+            collection.Should().Contain(item1)
+                .And.Contain(item2);
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace TextQuest.Domain.UnitTests.Common
 
             collection.Add(same);
 
-            collection.Should().HaveCount(1).And.ContainEquivalentOf(expected);
+            collection.Should().HaveCount(1).And.Contain(expected);
         }
 
         [Test]
@@ -138,7 +138,7 @@ namespace TextQuest.Domain.UnitTests.Common
 
             var result = collection.Remove(argumentItem);
 
-            collection.Should().ContainEquivalentOf(item1);
+            collection.Should().Contain(item1);
             result.Should().BeFalse();
         }
 
@@ -149,7 +149,7 @@ namespace TextQuest.Domain.UnitTests.Common
 
             var result = collection.Remove(item2);
 
-            collection.Should().ContainEquivalentOf(item1);
+            collection.Should().Contain(item1);
             result.Should().BeFalse();
         }
 
@@ -161,7 +161,7 @@ namespace TextQuest.Domain.UnitTests.Common
 
             var result = collection.Remove(argumentItem);
 
-            collection.Should().ContainEquivalentOf(item1);
+            collection.Should().Contain(item1);
             result.Should().BeFalse();
         }
 
@@ -174,7 +174,7 @@ namespace TextQuest.Domain.UnitTests.Common
 
             var result = collection.Remove(argumentItem);
 
-            collection.Should().ContainEquivalentOf(expected);
+            collection.Should().Contain(expected);
             result.Should().BeTrue();
         }
 

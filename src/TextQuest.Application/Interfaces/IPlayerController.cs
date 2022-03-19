@@ -4,7 +4,7 @@
     {
         public Location CurrentLocation { get; }
         public IReadOnlyList<Quest> Quests { get; }
-        public IReadOnlyList<Item> Items { get; }
+        public IEnumerable<Counted<Item>> Items { get; }
 
         void MoveTo(Location newLocation);
         void ExchangeQuestItems(Character reciever);
