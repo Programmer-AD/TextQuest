@@ -28,7 +28,7 @@ namespace TextQuest.CLI
 
         public void Run()
         {
-            var creationParams = new WorldCreationParams(20..40, 4, 6);
+            var creationParams = new WorldCreationParams(20..40, 5..15, 10, 4, 6);
             stringBuilder.AppendLine("Генерация...");
             FlushToConsole();
 
