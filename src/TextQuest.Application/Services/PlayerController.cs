@@ -14,7 +14,7 @@ namespace TextQuest.Application.Services
 
         public Location CurrentLocation => player.Location;
 
-        public IReadOnlyList<Quest> Quests => player.Quests;
+        public IEnumerable<Quest> Quests => player.Quests;
 
         public IEnumerable<Counted<Item>> Items => player.Items;
 
@@ -46,6 +46,11 @@ namespace TextQuest.Application.Services
             CheckCanBeAdded(quest);
 
             player.Quests.Add(quest);
+        }
+
+        public bool HasQuest(Quest quest)
+        {
+            return player.Quests.Contains(quest);
         }
 
         private void CheckCanExchangeItems(Character reciever)
@@ -95,7 +100,7 @@ namespace TextQuest.Application.Services
                 (quest => quest.RequiredQuests.Any(x => !x.Completed), "Not all required quests completed!");
 
             yield return
-                (quest => player.Quests.Contains(quest), "Quest already added!");
+                (HasQuest, "Quest already added!");
         }
     }
 }

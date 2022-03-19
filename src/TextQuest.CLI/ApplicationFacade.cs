@@ -176,25 +176,23 @@ namespace TextQuest.CLI
         {
             if (character.CompletedQuestCount < character.QuestCount)
             {
-                var availableQuests = character.AvailableQuests;
+                var availableQuests = character.AvailableQuests
+                    .Where(x => !playerController.HasQuest(x));
+
                 if (availableQuests.Any())
                 {
                     int pickedCount = 0;
                     foreach (var quest in availableQuests)
                     {
-                        try
-                        {
-                            playerController.PickQuest(quest);
-                            pickedCount++;
-                        }
-                        catch (QuestAddingException) { }
+                        playerController.PickQuest(quest);
+                        pickedCount++;
                     }
                     PrintExtraMessage($"В журнал добавлено {pickedCount} новых квестов");
                 }
                 else
                 {
                     var recomendedGiver = character.RecomendedQuest.Giver;
-                    PrintExtraMessage("Нет доступных квестов" + Environment.NewLine +
+                    PrintExtraMessage("Нет новых доступных квестов" + Environment.NewLine +
                         $"Подсказка: сходите к {recomendedGiver.Name} из {recomendedGiver.Location.Name}");
                 }
             }
