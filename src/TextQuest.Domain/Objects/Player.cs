@@ -4,6 +4,6 @@
     {
         public Location Location { get; set; }
         public List<Quest> Quests { get; set; } = new();
-        public List<Item> Items { get; set; } = new();
+        public CountedCollection<Item> Items { get; set; } = new();
     }
 }
