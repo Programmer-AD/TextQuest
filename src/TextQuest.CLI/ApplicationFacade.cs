@@ -34,9 +34,9 @@ namespace TextQuest.CLI
                 ItemTypeCount = 5..15,
                 MonsterTypeCount = 4..12,
 
-                MaxItemForQuestCount = 10,
-                MaxQuestsForCharacter = 4,
-                MaxCharactersInLocation = 6,
+                MaxItemCountForQuest = 10,
+                QuestsForCharacter = 3..6,
+                CharactersInLocation = 2..5,
 
                 MaxMonsterTypeForQuest = 3,
                 MaxMonsterCountForQuest = 3,

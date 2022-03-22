@@ -37,18 +37,18 @@ namespace TextQuest.Application.Services
             MakeRandomList(items, creationParams.ItemTypeCount);
             MakeRandomList(monsters, creationParams.MonsterTypeCount);
 
-            var characterCount = GetDistributionRange(creationParams.MaxQuestsForCharacter, quests.Count);
+            var characterCount = GetDistributionRange(creationParams.QuestsForCharacter, quests.Count);
             MakeRandomList(characters, characterCount);
 
-            var locationCount = GetDistributionRange(creationParams.MaxCharactersInLocation, characters.Count);
+            var locationCount = GetDistributionRange(creationParams.CharactersInLocation, characters.Count);
             MakeRandomList(locations, locationCount);
 
             MakeWorld();
         }
 
-        private static Range GetDistributionRange(int countLimit, int maxCount)
+        private static Range GetDistributionRange(Range countLimit, int maxCount)
         {
-            return (maxCount / countLimit + 1)..maxCount;
+            return (maxCount / countLimit.End.Value + 1)..(maxCount / countLimit.Start.Value);
         }
 
         private void MakeRandomList<T>(List<T> list, Range countRange)
@@ -76,11 +76,11 @@ namespace TextQuest.Application.Services
             SetQuestRequiredQuests(maxRequiredQuests);
             SetMonsterDrops(creationParams.MaxMonsterDropType,
                 creationParams.MaxMonsterDropCount);
-            SetQuestItems(creationParams.MaxItemForQuestCount,
+            SetQuestItems(creationParams.MaxItemCountForQuest,
                 creationParams.MaxMonsterTypeForQuest,
                 creationParams.MaxMonsterTypeForQuest);
-            SetCharacterQuests(creationParams.MaxQuestsForCharacter);
-            SetLocationCharacters(creationParams.MaxCharactersInLocation);
+            SetCharacterQuests(creationParams.QuestsForCharacter);
+            SetLocationCharacters(creationParams.CharactersInLocation);
             SetMonsterLocations();
         }
 
@@ -151,19 +151,26 @@ namespace TextQuest.Application.Services
             }
         }
 
-        private void SetCharacterQuests(int maxQuestsForCharacter)
+        private void SetCharacterQuests(Range questsForCharacter)
         {
             int pos = 0;
-            foreach (var character in characters)
+            for (int i = 0; i < questsForCharacter.Start.Value && pos < quests.Count; i++)
             {
-                var quest = quests[pos++];
-                character.Quests.Add(quest);
-                quest.Giver = character;
+                foreach (var character in characters)
+                {
+                    var quest = quests[pos++];
+                    character.Quests.Add(quest);
+                    quest.Giver = character;
+                    if (pos >= quests.Count)
+                    {
+                        break;
+                    }
+                }
             }
             while (pos < quests.Count)
             {
                 var character = random.NextElement(characters);
-                if (character.Quests.Count < maxQuestsForCharacter)
+                if (character.Quests.Count < questsForCharacter.End.Value)
                 {
                     var quest = quests[pos++];
                     character.Quests.Add(quest);
@@ -172,19 +179,26 @@ namespace TextQuest.Application.Services
             }
         }
 
-        private void SetLocationCharacters(int maxCharactersInLocation)
+        private void SetLocationCharacters(Range charactersInLocation)
         {
             int pos = 0;
-            foreach (var location in locations)
+            for (int i = 0; i < charactersInLocation.Start.Value && pos < characters.Count; i++)
             {
-                var character = characters[pos++];
-                location.Characters.Add(character);
-                character.Location = location;
+                foreach (var location in locations)
+                {
+                    var character = characters[pos++];
+                    location.Characters.Add(character);
+                    character.Location = location;
+                    if (pos >= characters.Count)
+                    {
+                        break;
+                    }
+                }
             }
             while (pos < characters.Count)
             {
                 var location = random.NextElement(locations);
-                if (location.Characters.Count < maxCharactersInLocation)
+                if (location.Characters.Count < charactersInLocation.End.Value)
                 {
                     var character = characters[pos++];
                     location.Characters.Add(character);

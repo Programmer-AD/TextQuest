@@ -16,9 +16,9 @@ namespace TextQuest.Application.UnitTests.Services
             ItemTypeCount = 3..5,
             MonsterTypeCount = 2..4,
 
-            MaxCharactersInLocation = 10,
-            MaxQuestsForCharacter = 5,
-            MaxItemForQuestCount = 3,
+            CharactersInLocation = 2..10,
+            QuestsForCharacter = 2..5,
+            MaxItemCountForQuest = 3,
 
             MaxMonsterDropCount = 2,
             MaxMonsterDropType = 4,
