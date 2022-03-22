@@ -210,10 +210,19 @@ namespace TextQuest.Application.Services
         private void SetMonsterLocations()
         {
             foreach (var monster in monsters)
-            {
-
+            { 
                 var location = random.NextElement(locations);
                 location.Monsters.Add(monster);
+            }
+            foreach (var location in locations)
+            {
+                foreach (var monster in monsters)
+                {
+                    if (random.Next(1..4) == 1 && !location.Monsters.Contains(monster))
+                    {
+                        location.Monsters.Add(monster);
+                    }
+                }
             }
         }
 

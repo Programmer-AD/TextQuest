@@ -41,7 +41,7 @@ namespace TextQuest.CLI
                 MaxMonsterTypeForQuest = 3,
                 MaxMonsterCountForQuest = 3,
 
-                MaxMonsterDropType = 5,
+                MaxMonsterDropType = 3,
                 MaxMonsterDropCount = 5,
             };
             stringBuilder.AppendLine("Генерация...");
@@ -254,7 +254,7 @@ namespace TextQuest.CLI
                 int i = 1;
                 foreach (var monster in playerController.CurrentLocation.Monsters)
                 {
-                    stringBuilder.AppendLine($"\t{i} Атаковать {monster.Name}")
+                    stringBuilder.AppendLine($"\t{i++} Атаковать {monster.Name}")
                         .AppendLine("\tДобыча:");
                     ShowItemList(monster.DroppedItems);
                     stringBuilder.AppendLine();
