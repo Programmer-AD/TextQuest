@@ -268,7 +268,7 @@ namespace TextQuest.CLI
                 if (selection > 0)
                 {
                     var monster = playerController.CurrentLocation.Monsters[selection - 1];
-                    
+
                     playerController.KillMonster(monster);
                 }
             } while (selection != 0);
