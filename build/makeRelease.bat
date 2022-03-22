@@ -1,0 +1,1 @@
+dotnet publish ../src/TextQuest.CLI -o ./publish -c Release -r win-x64 --no-self-contained -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:DebugType=None
