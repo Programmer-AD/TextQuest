@@ -53,6 +53,14 @@ namespace TextQuest.Application.Services
             return player.Quests.Contains(quest);
         }
 
+        public void KillMonster(Monster monster)
+        {
+            foreach (var item in monster.DroppedItems)
+            {
+                player.Items.Add(item);
+            }
+        }
+
         private void CheckCanExchangeItems(Character reciever)
         {
             if (reciever.Location != player.Location)

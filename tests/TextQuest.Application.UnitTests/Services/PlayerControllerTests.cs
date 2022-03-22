@@ -222,5 +222,17 @@ namespace TextQuest.Application.UnitTests.Services
             playerController.Invoking(x => x.PickQuest(questWithRequirement))
                 .Should().Throw<QuestAddingException>();
         }
+
+        [Test]
+        public void KillMonster_AddItems()
+        {
+            var monster = new Monster();
+            monster.DroppedItems.Add(item1);
+            monster.DroppedItems.Add(item2);
+
+            playerController.KillMonster(monster);
+
+            playerController.Items.Should().Contain(item1).And.Contain(item2);
+        }
     }
 }

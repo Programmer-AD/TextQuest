@@ -28,7 +28,22 @@ namespace TextQuest.CLI
 
         public void Run()
         {
-            var creationParams = new WorldCreationParams(20..40, 5..15, 10, 4, 6);
+            var creationParams = new WorldCreationParams
+            {
+                QuestCount = 20..40,
+                ItemTypeCount = 5..15,
+                MonsterTypeCount = 4..12,
+
+                MaxItemForQuestCount = 10,
+                MaxQuestsForCharacter = 4,
+                MaxCharactersInLocation = 6,
+
+                MaxMonsterTypeForQuest = 3,
+                MaxMonsterCountForQuest = 3,
+
+                MaxMonsterDropType = 5,
+                MaxMonsterDropCount = 5,
+            };
             stringBuilder.AppendLine("Генерация...");
             FlushToConsole();
 
@@ -56,18 +71,23 @@ namespace TextQuest.CLI
             ShowPlayerItems();
 
             stringBuilder.AppendLine("Действия: ")
-                .AppendLine("\t0 Изменить локацию")
-                .AppendLine("\t1 Взаимодействовать с персонажами");
+                .AppendLine("\t0 Ничего")
+                .AppendLine("\t1 Изменить локацию")
+                .AppendLine("\t2 Взаимодействовать с персонажами")
+                .AppendLine("\t3 Бить монстров");
 
             FlushToConsole();
-            var selection = GetSelection(2);
+            var selection = GetSelection(4);
             switch (selection)
             {
-                case 0:
+                case 1:
                     ChangeLocationMenu();
                     break;
-                case 1:
+                case 2:
                     CharacterInteractMenu();
+                    break;
+                case 3:
+                    MonsterAttackMenu();
                     break;
             }
         }
@@ -110,6 +130,7 @@ namespace TextQuest.CLI
                 stringBuilder.AppendLine($"\t- {count} * \"{item.Name}\"");
             }
         }
+
         private void ChangeLocationMenu()
         {
             stringBuilder.AppendLine("<<<Смена локации>>>")
@@ -220,6 +241,37 @@ namespace TextQuest.CLI
             {
                 PrintExtraMessage("Нет предметов или повода для обмена");
             }
+        }
+
+        private void MonsterAttackMenu()
+        {
+            int selection;
+
+            do
+            {
+                stringBuilder.AppendLine("<<<Атаковать монстров>>>")
+                    .AppendLine("\t0 Отмена");
+                int i = 1;
+                foreach (var monster in playerController.CurrentLocation.Monsters)
+                {
+                    stringBuilder.AppendLine($"\t{i} Атаковать {monster.Name}")
+                        .AppendLine("\tДобыча:");
+                    ShowItemList(monster.DroppedItems);
+                    stringBuilder.AppendLine();
+                }
+                ShowActiveQuests();
+                ShowPlayerItems();
+
+                FlushToConsole();
+
+                selection = GetSelection(playerController.CurrentLocation.Monsters.Count + 1);
+                if (selection > 0)
+                {
+                    var monster = playerController.CurrentLocation.Monsters[selection - 1];
+                    
+                    playerController.KillMonster(monster);
+                }
+            } while (selection != 0);
         }
 
         private int GetSelection(int variantCount)
