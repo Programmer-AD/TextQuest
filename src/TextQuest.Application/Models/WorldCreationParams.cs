@@ -1,9 +1,19 @@
 ﻿namespace TextQuest.Application.Models
 {
-    public record struct WorldCreationParams(
-        Range QuestCount,
-        Range ItemTypeCount,
-        int MaxItemCount,
-        int MaxQuestsForCharacter,
-        int MaxCharactersInLocation);
+    public struct WorldCreationParams
+    {
+        public Range QuestCount;
+        public Range ItemTypeCount;
+        public Range MonsterTypeCount;
+
+        public Range QuestsForCharacter;
+        public Range CharactersInLocation;
+
+        public int MaxMonsterDropType;
+        public int MaxMonsterDropCount;
+
+        public int MaxItemCountForQuest;
+        public int MaxMonsterTypeForQuest;
+        public int MaxMonsterCountForQuest;
+    }
 }

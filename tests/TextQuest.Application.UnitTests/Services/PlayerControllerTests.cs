@@ -12,12 +12,10 @@ namespace TextQuest.Application.UnitTests.Services
         private static readonly Character questGiver = new()
         {
             Location = location,
-            Quests = new() { uncompletedQuest, uncompletedQuest2, completedQuest },
         };
         private static readonly Character otherQuestGiver = new()
         {
             Location = location,
-            Quests = new() { uncompletedQuestFromOtherGiver }
         };
         private static readonly Counted<Item> item1 = new(new Item(), 1);
         private static readonly Counted<Item> item2 = new(new Item(), 1);
@@ -25,14 +23,11 @@ namespace TextQuest.Application.UnitTests.Services
         {
             Completed = false,
             Giver = questGiver,
-            ObtainedItems = new() { item1 },
         };
         private static readonly Quest uncompletedQuest2 = new()
         {
             Completed = false,
             Giver = questGiver,
-            ObtainedItems = new() { item2 },
-            RequiredItems = new() { item1 },
         };
         private static readonly Quest uncompletedQuestFromOtherGiver = new()
         {
@@ -44,6 +39,19 @@ namespace TextQuest.Application.UnitTests.Services
             Completed = true,
             Giver = questGiver,
         };
+        static PlayerControllerTests()
+        {
+            questGiver.Quests.Add(uncompletedQuest);
+            questGiver.Quests.Add(uncompletedQuest2);
+            questGiver.Quests.Add(completedQuest);
+
+            otherQuestGiver.Quests.Add(uncompletedQuestFromOtherGiver);
+
+            uncompletedQuest.ObtainedItems.Add(item1);
+
+            uncompletedQuest2.RequiredItems.Add(item1);
+            uncompletedQuest2.ObtainedItems.Add(item2);
+        }
 
 
         private PlayerController playerController;
@@ -57,7 +65,7 @@ namespace TextQuest.Application.UnitTests.Services
 
             completedQuest.Completed = true;
 
-            playerController = new ();
+            playerController = new();
         }
 
         [Test]
@@ -208,11 +216,23 @@ namespace TextQuest.Application.UnitTests.Services
             {
                 Completed = false,
                 Giver = questGiver,
-                RequiredQuests = new() { uncompletedQuest }
             };
+            questWithRequirement.RequiredQuests.Add(uncompletedQuest);
 
             playerController.Invoking(x => x.PickQuest(questWithRequirement))
                 .Should().Throw<QuestAddingException>();
+        }
+
+        [Test]
+        public void KillMonster_AddItems()
+        {
+            var monster = new Monster();
+            monster.DroppedItems.Add(item1);
+            monster.DroppedItems.Add(item2);
+
+            playerController.KillMonster(monster);
+
+            playerController.Items.Should().Contain(item1).And.Contain(item2);
         }
     }
 }

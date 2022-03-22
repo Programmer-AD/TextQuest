@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -9,7 +10,22 @@ namespace TextQuest.Application.UnitTests.Services
     [TestFixture]
     internal class WorldProviderTests
     {
-        private static readonly WorldCreationParams creationParams = new(5..10, 3..5, 10, 3, 2);
+        private static readonly WorldCreationParams creationParams = new()
+        {
+            QuestCount = 5..10,
+            ItemTypeCount = 3..5,
+            MonsterTypeCount = 2..4,
+
+            CharactersInLocation = 2..10,
+            QuestsForCharacter = 2..5,
+            MaxItemCountForQuest = 3,
+
+            MaxMonsterDropCount = 2,
+            MaxMonsterDropType = 4,
+
+            MaxMonsterTypeForQuest = 2,
+            MaxMonsterCountForQuest = 3,
+        };
 
         private Mock<INameGenerator> nameGeneratorMock;
         private Mock<IRandom> randomMock;
@@ -24,11 +40,13 @@ namespace TextQuest.Application.UnitTests.Services
             nameGeneratorMock.Setup(x => x.GetName(It.IsAny<NameGenerationParams>()))
                 .Returns((NameGenerationParams _) => nameCounter++.ToString());
 
-            randomMock = new ();
+            randomMock = new();
             randomMock.Setup(x => x.Next(It.IsAny<System.Range>()))
                 .Returns((System.Range range) => range.Start.Value);
+            randomMock.Setup(x => x.NextElement(It.IsAny<List<It.IsAnyType>>()))
+                .Returns((IEnumerable<object> list) => list.First());
 
-            worldProvider = new (randomMock.Object, nameGeneratorMock.Object);
+            worldProvider = new(randomMock.Object, nameGeneratorMock.Object);
         }
 
         [Test]
@@ -67,7 +85,7 @@ namespace TextQuest.Application.UnitTests.Services
         }
 
         [Test]
-        public void CreateNew_CreatesAtLeastOneQuestWithNoRequiredItemsOrQuests()
+        public void CreateNew_CreatesAtLeastOneQuestWithNoRequiredQuests()
         {
             worldProvider.CreateNew(creationParams);
 
@@ -75,7 +93,7 @@ namespace TextQuest.Application.UnitTests.Services
                 .SelectMany(x => x.Characters)
                 .SelectMany(x => x.Quests)
                 .Should().Contain(
-                x => !(x.RequiredItems.Any() && x.RequiredQuests.Any()));
+                x => !x.RequiredQuests.Any());
         }
     }
 }

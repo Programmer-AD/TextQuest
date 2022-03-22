@@ -1,6 +1,5 @@
 ﻿using TextQuest.Application.Interfaces;
 using TextQuest.Domain.Interfaces;
-using TextQuest.Domain.Objects;
 
 namespace TextQuest.Application.Services
 {
@@ -9,80 +8,120 @@ namespace TextQuest.Application.Services
         private readonly IRandom random;
         private readonly INameGenerator nameGenerator;
 
-        private readonly HashSet<string> usedNames;
+        private readonly List<Quest> quests = new();
+        private readonly List<Item> items = new();
+        private readonly List<Monster> monsters = new();
+        private readonly List<Character> characters = new();
+        private readonly List<Location> locations = new();
+        private readonly HashSet<string> usedNames = new();
 
         public WorldProvider(IRandom random, INameGenerator nameGenerator)
         {
             this.random = random;
             this.nameGenerator = nameGenerator;
-            usedNames = new();
         }
 
         public World World { get; private set; }
 
         public void CreateNew(WorldCreationParams creationParams)
         {
-            var quests = CreateQuests(creationParams.QuestCount);
-            var items = CreateItems(creationParams.ItemTypeCount);
-            DistributeItems(quests, items, creationParams.MaxItemCount);
-            var characters = CreateCharacters(quests, creationParams.MaxQuestsForCharacter);
-            var locations = CreateLocations(characters, creationParams.MaxCharactersInLocation);
-            World = CreateWorld(locations);
-
-
-            World.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
-            SetNames(locations, NameGenerationParamsConstants.LocationName);
-            SetNames(characters, NameGenerationParamsConstants.CharacterName);
-            SetNames(items, NameGenerationParamsConstants.ItemName);
+            MakeObjects(creationParams);
+            SetupObjects(creationParams);
+            SetObjectNames();
+            Clear();
         }
 
-        private List<Quest> CreateQuests(Range questCountRange)
+        private void MakeObjects(WorldCreationParams creationParams)
         {
-            var questCount = random.Next(questCountRange);
-            var maxRequired = (int)Math.Sqrt(questCount);
+            MakeRandomList(quests, creationParams.QuestCount);
+            MakeRandomList(items, creationParams.ItemTypeCount);
+            MakeRandomList(monsters, creationParams.MonsterTypeCount);
 
-            var quests = new List<Quest>(questCount);
-            for (int i = 0; i < questCount; i++)
+            var characterCount = GetDistributionRange(creationParams.QuestsForCharacter, quests.Count);
+            MakeRandomList(characters, characterCount);
+
+            var locationCount = GetDistributionRange(creationParams.CharactersInLocation, characters.Count);
+            MakeRandomList(locations, locationCount);
+
+            MakeWorld();
+        }
+
+        private static Range GetDistributionRange(Range countLimit, int maxCount)
+        {
+            return (maxCount / countLimit.End.Value + 1)..(maxCount / countLimit.Start.Value);
+        }
+
+        private void MakeRandomList<T>(List<T> list, Range countRange)
+            where T : class, new()
+        {
+            var count = random.Next(countRange);
+            list.Capacity = count;
+
+            for (int i = 0; i < count; i++)
             {
-                var quest = new Quest();
-                AddRequiredQuests(quest, quests, maxRequired);
-                quests.Add(quest);
+                var obj = new T();
+                list.Add(obj);
+            }
+        }
+
+        private void MakeWorld()
+        {
+            World = new();
+            World.Locations.AddRange(locations);
+        }
+
+        private void SetupObjects(WorldCreationParams creationParams)
+        {
+            var maxRequiredQuests = (int)Math.Sqrt(characters.Count);
+            SetQuestRequiredQuests(maxRequiredQuests);
+            SetMonsterDrops(creationParams.MaxMonsterDropType,
+                creationParams.MaxMonsterDropCount);
+            SetQuestItems(creationParams.MaxItemCountForQuest,
+                creationParams.MaxMonsterTypeForQuest,
+                creationParams.MaxMonsterTypeForQuest);
+            SetCharacterQuests(creationParams.QuestsForCharacter);
+            SetLocationCharacters(creationParams.CharactersInLocation);
+            SetMonsterLocations();
+        }
+
+        private void SetQuestRequiredQuests(int maxRequired)
+        {
+            var previousQuests = new List<Quest>();
+            foreach (var quest in quests)
+            {
+                var thisMaxRequired = Math.Min(maxRequired, previousQuests.Count);
+                var requiredCount = random.Next(0..thisMaxRequired);
+
+                var requiredQuests = new HashSet<Quest>();
+                for (int i = 0; i < requiredCount; i++)
+                {
+                    var requiredQuest = random.NextElement(previousQuests);
+                    requiredQuests.Add(requiredQuest);
+                }
+
+                quest.RequiredQuests.AddRange(requiredQuests);
+                previousQuests.Add(quest);
             }
 
             random.Mix(quests);
-            return quests;
         }
 
-        private void AddRequiredQuests(Quest quest, List<Quest> previousQuests, int maxRequired)
+        private void SetMonsterDrops(int maxDropTypeCount, int maxDropCount)
         {
-            maxRequired = Math.Min(maxRequired, previousQuests.Count);
-            var requiredCount = random.Next(0..maxRequired);
-
-            var requiredQuests = new HashSet<Quest>();
-            for (int i = 0; i < requiredCount; i++)
+            foreach (var monster in monsters)
             {
-                var requiredQuest = random.NextElement(previousQuests);
-                requiredQuests.Add(requiredQuest);
-            }
+                var dropTypeCount = random.Next(1..maxDropTypeCount);
 
-            quest.RequiredQuests.AddRange(requiredQuests);
+                for (int i = 0; i < dropTypeCount; i++)
+                {
+                    var dropCount = (uint)random.Next(1..maxDropCount);
+                    var item = random.NextElement(items);
+                    monster.DroppedItems.Add(new(item, dropCount));
+                }
+            }
         }
 
-        private List<Item> CreateItems(Range itemTypeCountRange)
-        {
-            var itemTypeCount = random.Next(itemTypeCountRange);
-            var items = new List<Item>();
-
-            for (int i = 0; i < itemTypeCount; i++)
-            {
-                var item = new Item();
-                items.Add(item);
-            }
-
-            return items;
-        }
-
-        private void DistributeItems(List<Quest> quests, List<Item> items, int maxItemCount)
+        private void SetQuestItems(int maxItemCount, int maxMonsterTypeForQuest, int maxMonsterCountForQuest)
         {
             foreach (var toQuest in quests)
             {
@@ -96,73 +135,104 @@ namespace TextQuest.Application.Services
                     toQuest.RequiredItems.Add(countedItem);
                 }
             }
-        }
-
-        private List<Character> CreateCharacters(List<Quest> quests, int maxQuestsForCharacter)
-        {
-            var characters = new List<Character>();
-
-            var questQueue = new Queue<Quest>(quests);
-            while (questQueue.Count > 0)
+            foreach (var quest in quests)
             {
-                var character = new Character();
-                AddCharacterQuests(character, questQueue, maxQuestsForCharacter);
-                characters.Add(character);
-            }
-
-            random.Mix(characters);
-            return characters;
-        }
-
-        private void AddCharacterQuests(Character character, Queue<Quest> questQueue, int maxQuestsForCharacter)
-        {
-            var questCount = random.Next(1..maxQuestsForCharacter);
-            questCount = Math.Min(questCount, questQueue.Count);
-
-            character.Quests.Capacity = questCount;
-            for (int i = 0; i < questCount; i++)
-            {
-                var quest = questQueue.Dequeue();
-                quest.Giver = character;
-                character.Quests.Add(quest);
+                var monsterTypeCount = random.Next(1..maxMonsterTypeForQuest);
+                for (int i = 0; i < monsterTypeCount; i++)
+                {
+                    var monster = random.NextElement(monsters);
+                    var monsterCount = (uint)random.Next(1..maxMonsterCountForQuest);
+                    foreach (var item in monster.DroppedItems)
+                    {
+                        var requiredCount = item.Count * monsterCount;
+                        quest.RequiredItems.Add(new(item.Value, requiredCount));
+                    }
+                }
             }
         }
 
-        private List<Location> CreateLocations(List<Character> characters, int maxCharactersInLocation)
+        private void SetCharacterQuests(Range questsForCharacter)
         {
-            var locations = new List<Location>();
-
-            var characterQueue = new Queue<Character>(characters);
-            while (characterQueue.Count > 0)
+            int pos = 0;
+            for (int i = 0; i < questsForCharacter.Start.Value && pos < quests.Count; i++)
             {
-                var location = new Location();
-                SetLocationCharacters(location, characterQueue, maxCharactersInLocation);
-                locations.Add(location);
+                foreach (var character in characters)
+                {
+                    var quest = quests[pos++];
+                    character.Quests.Add(quest);
+                    quest.Giver = character;
+                    if (pos >= quests.Count)
+                    {
+                        break;
+                    }
+                }
             }
-
-            random.Mix(locations);
-            return locations;
-        }
-
-        private void SetLocationCharacters(Location location, Queue<Character> characterQueue, int maxCharactersInLocation)
-        {
-            var characterCount = random.Next(1..maxCharactersInLocation);
-            characterCount = Math.Min(characterCount, characterQueue.Count);
-
-            location.Characters.Capacity = characterCount;
-            for (int i = 0; i < characterCount; i++)
+            while (pos < quests.Count)
             {
-                var character = characterQueue.Dequeue();
-                character.Location = location;
-                location.Characters.Add(character);
+                var character = random.NextElement(characters);
+                if (character.Quests.Count < questsForCharacter.End.Value)
+                {
+                    var quest = quests[pos++];
+                    character.Quests.Add(quest);
+                    quest.Giver = character;
+                }
             }
         }
 
-        private World CreateWorld(List<Location> locations)
+        private void SetLocationCharacters(Range charactersInLocation)
         {
-            var world = new World();
-            world.Locations.AddRange(locations);
-            return world;
+            int pos = 0;
+            for (int i = 0; i < charactersInLocation.Start.Value && pos < characters.Count; i++)
+            {
+                foreach (var location in locations)
+                {
+                    var character = characters[pos++];
+                    location.Characters.Add(character);
+                    character.Location = location;
+                    if (pos >= characters.Count)
+                    {
+                        break;
+                    }
+                }
+            }
+            while (pos < characters.Count)
+            {
+                var location = random.NextElement(locations);
+                if (location.Characters.Count < charactersInLocation.End.Value)
+                {
+                    var character = characters[pos++];
+                    location.Characters.Add(character);
+                    character.Location = location;
+                }
+            }
+        }
+
+        private void SetMonsterLocations()
+        {
+            foreach (var monster in monsters)
+            {
+                var location = random.NextElement(locations);
+                location.Monsters.Add(monster);
+            }
+            foreach (var location in locations)
+            {
+                foreach (var monster in monsters)
+                {
+                    if (random.Next(1..4) == 1 && !location.Monsters.Contains(monster))
+                    {
+                        location.Monsters.Add(monster);
+                    }
+                }
+            }
+        }
+
+        private void SetObjectNames()
+        {
+            SetNames(items, NameGenerationParamsConstants.ItemName);
+            SetNames(monsters, NameGenerationParamsConstants.MonsterName);
+            SetNames(characters, NameGenerationParamsConstants.CharacterName);
+            SetNames(locations, NameGenerationParamsConstants.LocationName);
+            World.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
         }
 
         private void SetNames(IEnumerable<INameable> nameables, NameGenerationParams nameParams)
@@ -184,6 +254,16 @@ namespace TextQuest.Application.Services
 
             usedNames.Add(name);
             return name;
+        }
+
+        private void Clear()
+        {
+            quests.Clear();
+            items.Clear();
+            monsters.Clear();
+            characters.Clear();
+            locations.Clear();
+            usedNames.Clear();
         }
     }
 }

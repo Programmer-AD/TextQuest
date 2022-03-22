@@ -10,5 +10,6 @@
         void ExchangeQuestItems(Character reciever);
         void PickQuest(Quest quest);
         bool HasQuest(Quest quest);
+        void KillMonster(Monster monster);
     }
 }
