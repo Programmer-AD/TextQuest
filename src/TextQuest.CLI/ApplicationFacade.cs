@@ -55,7 +55,7 @@ namespace TextQuest.CLI
                 MainMenu();
             } while (World.CompletedQuestCount < World.QuestCount);
 
-            PrintExtraMessage("Игра пройдена!");
+            PrintExtraMessage($"Игра пройдена ({World.CompletedQuestCount} квестов)!");
         }
 
         private void MainMenu()
@@ -71,7 +71,6 @@ namespace TextQuest.CLI
             ShowPlayerItems();
 
             stringBuilder.AppendLine("Действия: ")
-                .AppendLine("\t0 Ничего")
                 .AppendLine("\t1 Изменить локацию")
                 .AppendLine("\t2 Взаимодействовать с персонажами")
                 .AppendLine("\t3 Бить монстров");
