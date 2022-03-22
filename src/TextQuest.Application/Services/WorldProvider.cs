@@ -8,22 +8,17 @@ namespace TextQuest.Application.Services
         private readonly IRandom random;
         private readonly INameGenerator nameGenerator;
 
-        private readonly List<Quest> quests;
-        private readonly List<Item> items;
-        private readonly List<Character> characters;
-        private readonly List<Location> locations;
-        private readonly HashSet<string> usedNames;
+        private readonly List<Quest> quests = new();
+        private readonly List<Item> items = new();
+        private readonly List<Monster> monsters = new();
+        private readonly List<Character> characters = new();
+        private readonly List<Location> locations = new();
+        private readonly HashSet<string> usedNames = new();
 
         public WorldProvider(IRandom random, INameGenerator nameGenerator)
         {
             this.random = random;
             this.nameGenerator = nameGenerator;
-
-            quests = new();
-            items = new();
-            characters = new();
-            locations = new();
-            usedNames = new();
         }
 
         public World World { get; private set; }
@@ -38,9 +33,9 @@ namespace TextQuest.Application.Services
 
         private void MakeObjects(WorldCreationParams creationParams)
         {
-
             MakeRandomList(quests, creationParams.QuestCount);
             MakeRandomList(items, creationParams.ItemTypeCount);
+            MakeRandomList(monsters, creationParams.MonsterTypeCount);
 
             var characterCount = GetDistributionRange(creationParams.MaxQuestsForCharacter, quests.Count);
             MakeRandomList(characters, characterCount);
@@ -53,7 +48,7 @@ namespace TextQuest.Application.Services
 
         private static Range GetDistributionRange(int countLimit, int maxCount)
         {
-            return Math.Max(1, maxCount / countLimit)..maxCount;
+            return (maxCount / countLimit + 1)..maxCount;
         }
 
         private void MakeRandomList<T>(List<T> list, Range countRange)
@@ -77,11 +72,16 @@ namespace TextQuest.Application.Services
 
         private void SetupObjects(WorldCreationParams creationParams)
         {
-            var maxRequired = (int)Math.Sqrt(characters.Count);
-            SetQuestRequiredQuests(maxRequired);
-            SetQuestItems(creationParams.MaxItemCount);
-            SetCharacterQuests();
-            SetLocationCharacters();
+            var maxRequiredQuests = (int)Math.Sqrt(characters.Count);
+            SetQuestRequiredQuests(maxRequiredQuests);
+            SetMonsterDrops(creationParams.MaxMonsterDropType,
+                creationParams.MaxMonsterDropCount);
+            SetQuestItems(creationParams.MaxItemForQuestCount,
+                creationParams.MaxMonsterTypeForQuest,
+                creationParams.MaxMonsterTypeForQuest);
+            SetCharacterQuests(creationParams.MaxQuestsForCharacter);
+            SetLocationCharacters(creationParams.MaxCharactersInLocation);
+            SetMonsterLocations();
         }
 
         private void SetQuestRequiredQuests(int maxRequired)
@@ -106,7 +106,22 @@ namespace TextQuest.Application.Services
             random.Mix(quests);
         }
 
-        private void SetQuestItems(int maxItemCount)
+        private void SetMonsterDrops(int maxDropTypeCount, int maxDropCount)
+        {
+            foreach (var monster in monsters)
+            {
+                var dropTypeCount = random.Next(1..maxDropTypeCount);
+
+                for (int i = 0; i < dropTypeCount; i++)
+                {
+                    var dropCount = (uint)random.Next(1..maxDropCount);
+                    var item = random.NextElement(items);
+                    monster.DroppedItems.Add(new(item, dropCount));
+                }
+            }
+        }
+
+        private void SetQuestItems(int maxItemCount, int maxMonsterTypeForQuest, int maxMonsterCountForQuest)
         {
             foreach (var toQuest in quests)
             {
@@ -120,9 +135,23 @@ namespace TextQuest.Application.Services
                     toQuest.RequiredItems.Add(countedItem);
                 }
             }
+            foreach (var quest in quests)
+            {
+                var monsterTypeCount = random.Next(1..maxMonsterTypeForQuest);
+                for (int i = 0; i < monsterTypeCount; i++)
+                {
+                    var monster = random.NextElement(monsters);
+                    var monsterCount = (uint)random.Next(1..maxMonsterCountForQuest);
+                    foreach (var item in monster.DroppedItems)
+                    {
+                        var requiredCount = item.Count * monsterCount;
+                        quest.RequiredItems.Add(new(item.Value, requiredCount));
+                    }
+                }
+            }
         }
 
-        private void SetCharacterQuests()
+        private void SetCharacterQuests(int maxQuestsForCharacter)
         {
             int pos = 0;
             foreach (var character in characters)
@@ -134,13 +163,16 @@ namespace TextQuest.Application.Services
             while (pos < quests.Count)
             {
                 var character = random.NextElement(characters);
-                var quest = quests[pos++];
-                character.Quests.Add(quest);
-                quest.Giver = character;
+                if (character.Quests.Count < maxQuestsForCharacter)
+                {
+                    var quest = quests[pos++];
+                    character.Quests.Add(quest);
+                    quest.Giver = character;
+                }
             }
         }
 
-        private void SetLocationCharacters()
+        private void SetLocationCharacters(int maxCharactersInLocation)
         {
             int pos = 0;
             foreach (var location in locations)
@@ -152,15 +184,29 @@ namespace TextQuest.Application.Services
             while (pos < characters.Count)
             {
                 var location = random.NextElement(locations);
-                var character = characters[pos++];
-                location.Characters.Add(character);
-                character.Location = location;
+                if (location.Characters.Count < maxCharactersInLocation)
+                {
+                    var character = characters[pos++];
+                    location.Characters.Add(character);
+                    character.Location = location;
+                }
+            }
+        }
+
+        private void SetMonsterLocations()
+        {
+            foreach (var monster in monsters)
+            {
+
+                var location = random.NextElement(locations);
+                location.Monsters.Add(monster);
             }
         }
 
         private void SetObjectNames()
         {
             SetNames(items, NameGenerationParamsConstants.ItemName);
+            SetNames(monsters, NameGenerationParamsConstants.MonsterName);
             SetNames(characters, NameGenerationParamsConstants.CharacterName);
             SetNames(locations, NameGenerationParamsConstants.LocationName);
             World.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
@@ -189,7 +235,9 @@ namespace TextQuest.Application.Services
 
         private void Clear()
         {
+            quests.Clear();
             items.Clear();
+            monsters.Clear();
             characters.Clear();
             locations.Clear();
             usedNames.Clear();

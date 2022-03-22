@@ -10,7 +10,22 @@ namespace TextQuest.Application.UnitTests.Services
     [TestFixture]
     internal class WorldProviderTests
     {
-        private static readonly WorldCreationParams creationParams = new(5..10, 3..5, 10, 3, 2);
+        private static readonly WorldCreationParams creationParams = new()
+        {
+            QuestCount = 5..10,
+            ItemTypeCount = 3..5,
+            MonsterTypeCount = 2..4,
+
+            MaxCharactersInLocation = 10,
+            MaxQuestsForCharacter = 5,
+            MaxItemForQuestCount = 3,
+
+            MaxMonsterDropCount = 2,
+            MaxMonsterDropType = 4,
+
+            MaxMonsterTypeForQuest = 2,
+            MaxMonsterCountForQuest = 3,
+        };
 
         private Mock<INameGenerator> nameGeneratorMock;
         private Mock<IRandom> randomMock;
@@ -70,7 +85,7 @@ namespace TextQuest.Application.UnitTests.Services
         }
 
         [Test]
-        public void CreateNew_CreatesAtLeastOneQuestWithNoRequiredItemsOrQuests()
+        public void CreateNew_CreatesAtLeastOneQuestWithNoRequiredQuests()
         {
             worldProvider.CreateNew(creationParams);
 
@@ -78,7 +93,7 @@ namespace TextQuest.Application.UnitTests.Services
                 .SelectMany(x => x.Characters)
                 .SelectMany(x => x.Quests)
                 .Should().Contain(
-                x => !(x.RequiredItems.Any() && x.RequiredQuests.Any()));
+                x => !x.RequiredQuests.Any());
         }
     }
 }
