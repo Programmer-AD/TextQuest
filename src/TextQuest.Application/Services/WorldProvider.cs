@@ -1,6 +1,5 @@
 ﻿using TextQuest.Application.Interfaces;
 using TextQuest.Domain.Interfaces;
-using TextQuest.Domain.Objects;
 
 namespace TextQuest.Application.Services
 {
@@ -9,12 +8,21 @@ namespace TextQuest.Application.Services
         private readonly IRandom random;
         private readonly INameGenerator nameGenerator;
 
+        private readonly List<Quest> quests;
+        private readonly List<Item> items;
+        private readonly List<Character> characters;
+        private readonly List<Location> locations;
         private readonly HashSet<string> usedNames;
 
         public WorldProvider(IRandom random, INameGenerator nameGenerator)
         {
             this.random = random;
             this.nameGenerator = nameGenerator;
+
+            quests = new();
+            items = new();
+            characters = new();
+            locations = new();
             usedNames = new();
         }
 
@@ -22,67 +30,83 @@ namespace TextQuest.Application.Services
 
         public void CreateNew(WorldCreationParams creationParams)
         {
-            var quests = CreateQuests(creationParams.QuestCount);
-            var items = CreateItems(creationParams.ItemTypeCount);
-            DistributeItems(quests, items, creationParams.MaxItemCount);
-            var characters = CreateCharacters(quests, creationParams.MaxQuestsForCharacter);
-            var locations = CreateLocations(characters, creationParams.MaxCharactersInLocation);
-            World = CreateWorld(locations);
-
-
-            World.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
-            SetNames(locations, NameGenerationParamsConstants.LocationName);
-            SetNames(characters, NameGenerationParamsConstants.CharacterName);
-            SetNames(items, NameGenerationParamsConstants.ItemName);
+            MakeObjects(creationParams);
+            SetupObjects(creationParams);
+            SetObjectNames();
+            Clear();
         }
 
-        private List<Quest> CreateQuests(Range questCountRange)
+        private void MakeObjects(WorldCreationParams creationParams)
         {
-            var questCount = random.Next(questCountRange);
-            var maxRequired = (int)Math.Sqrt(questCount);
 
-            var quests = new List<Quest>(questCount);
-            for (int i = 0; i < questCount; i++)
+            MakeRandomList(quests, creationParams.QuestCount);
+            MakeRandomList(items, creationParams.ItemTypeCount);
+
+            var characterCount = GetDistributionRange(creationParams.MaxQuestsForCharacter, quests.Count);
+            MakeRandomList(characters, characterCount);
+
+            var locationCount = GetDistributionRange(creationParams.MaxCharactersInLocation, characters.Count);
+            MakeRandomList(locations, locationCount);
+
+            MakeWorld();
+        }
+
+        private static Range GetDistributionRange(int countLimit, int maxCount)
+        {
+            return Math.Max(1, maxCount / countLimit)..maxCount;
+        }
+
+        private void MakeRandomList<T>(List<T> list, Range countRange)
+            where T : class, new()
+        {
+            var count = random.Next(countRange);
+            list.Capacity = count;
+
+            for (int i = 0; i < count; i++)
             {
-                var quest = new Quest();
-                AddRequiredQuests(quest, quests, maxRequired);
-                quests.Add(quest);
+                var obj = new T();
+                list.Add(obj);
+            }
+        }
+
+        private void MakeWorld()
+        {
+            World = new();
+            World.Locations.AddRange(locations);
+        }
+
+        private void SetupObjects(WorldCreationParams creationParams)
+        {
+            var maxRequired = (int)Math.Sqrt(characters.Count);
+            SetQuestRequiredQuests(maxRequired);
+            SetQuestItems(creationParams.MaxItemCount);
+            SetCharacterQuests();
+            SetLocationCharacters();
+        }
+
+        private void SetQuestRequiredQuests(int maxRequired)
+        {
+            var previousQuests = new List<Quest>();
+            foreach (var quest in quests)
+            {
+                var thisMaxRequired = Math.Min(maxRequired, previousQuests.Count);
+                var requiredCount = random.Next(0..thisMaxRequired);
+
+                var requiredQuests = new HashSet<Quest>();
+                for (int i = 0; i < requiredCount; i++)
+                {
+                    var requiredQuest = random.NextElement(previousQuests);
+                    requiredQuests.Add(requiredQuest);
+                }
+
+                quest.RequiredQuests.AddRange(requiredQuests);
+                previousQuests.Add(quest);
             }
 
             random.Mix(quests);
-            return quests;
         }
 
-        private void AddRequiredQuests(Quest quest, List<Quest> previousQuests, int maxRequired)
-        {
-            maxRequired = Math.Min(maxRequired, previousQuests.Count);
-            var requiredCount = random.Next(0..maxRequired);
-
-            var requiredQuests = new HashSet<Quest>();
-            for (int i = 0; i < requiredCount; i++)
-            {
-                var requiredQuest = random.NextElement(previousQuests);
-                requiredQuests.Add(requiredQuest);
-            }
-
-            quest.RequiredQuests.AddRange(requiredQuests);
-        }
-
-        private List<Item> CreateItems(Range itemTypeCountRange)
-        {
-            var itemTypeCount = random.Next(itemTypeCountRange);
-            var items = new List<Item>();
-
-            for (int i = 0; i < itemTypeCount; i++)
-            {
-                var item = new Item();
-                items.Add(item);
-            }
-
-            return items;
-        }
-
-        private void DistributeItems(List<Quest> quests, List<Item> items, int maxItemCount)
+        private void SetQuestItems(int maxItemCount)
         {
             foreach (var toQuest in quests)
             {
@@ -98,71 +122,48 @@ namespace TextQuest.Application.Services
             }
         }
 
-        private List<Character> CreateCharacters(List<Quest> quests, int maxQuestsForCharacter)
+        private void SetCharacterQuests()
         {
-            var characters = new List<Character>();
-
-            var questQueue = new Queue<Quest>(quests);
-            while (questQueue.Count > 0)
+            int pos = 0;
+            foreach (var character in characters)
             {
-                var character = new Character();
-                AddCharacterQuests(character, questQueue, maxQuestsForCharacter);
-                characters.Add(character);
-            }
-
-            random.Mix(characters);
-            return characters;
-        }
-
-        private void AddCharacterQuests(Character character, Queue<Quest> questQueue, int maxQuestsForCharacter)
-        {
-            var questCount = random.Next(1..maxQuestsForCharacter);
-            questCount = Math.Min(questCount, questQueue.Count);
-
-            character.Quests.Capacity = questCount;
-            for (int i = 0; i < questCount; i++)
-            {
-                var quest = questQueue.Dequeue();
-                quest.Giver = character;
+                var quest = quests[pos++];
                 character.Quests.Add(quest);
+                quest.Giver = character;
+            }
+            while (pos < quests.Count)
+            {
+                var character = random.NextElement(characters);
+                var quest = quests[pos++];
+                character.Quests.Add(quest);
+                quest.Giver = character;
             }
         }
 
-        private List<Location> CreateLocations(List<Character> characters, int maxCharactersInLocation)
+        private void SetLocationCharacters()
         {
-            var locations = new List<Location>();
-
-            var characterQueue = new Queue<Character>(characters);
-            while (characterQueue.Count > 0)
+            int pos = 0;
+            foreach (var location in locations)
             {
-                var location = new Location();
-                SetLocationCharacters(location, characterQueue, maxCharactersInLocation);
-                locations.Add(location);
-            }
-
-            random.Mix(locations);
-            return locations;
-        }
-
-        private void SetLocationCharacters(Location location, Queue<Character> characterQueue, int maxCharactersInLocation)
-        {
-            var characterCount = random.Next(1..maxCharactersInLocation);
-            characterCount = Math.Min(characterCount, characterQueue.Count);
-
-            location.Characters.Capacity = characterCount;
-            for (int i = 0; i < characterCount; i++)
-            {
-                var character = characterQueue.Dequeue();
-                character.Location = location;
+                var character = characters[pos++];
                 location.Characters.Add(character);
+                character.Location = location;
+            }
+            while (pos < characters.Count)
+            {
+                var location = random.NextElement(locations);
+                var character = characters[pos++];
+                location.Characters.Add(character);
+                character.Location = location;
             }
         }
 
-        private World CreateWorld(List<Location> locations)
+        private void SetObjectNames()
         {
-            var world = new World();
-            world.Locations.AddRange(locations);
-            return world;
+            SetNames(items, NameGenerationParamsConstants.ItemName);
+            SetNames(characters, NameGenerationParamsConstants.CharacterName);
+            SetNames(locations, NameGenerationParamsConstants.LocationName);
+            World.Name = GetUnusedName(NameGenerationParamsConstants.WorldName);
         }
 
         private void SetNames(IEnumerable<INameable> nameables, NameGenerationParams nameParams)
@@ -184,6 +185,14 @@ namespace TextQuest.Application.Services
 
             usedNames.Add(name);
             return name;
+        }
+
+        private void Clear()
+        {
+            items.Clear();
+            characters.Clear();
+            locations.Clear();
+            usedNames.Clear();
         }
     }
 }

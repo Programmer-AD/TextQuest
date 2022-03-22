@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -24,11 +25,13 @@ namespace TextQuest.Application.UnitTests.Services
             nameGeneratorMock.Setup(x => x.GetName(It.IsAny<NameGenerationParams>()))
                 .Returns((NameGenerationParams _) => nameCounter++.ToString());
 
-            randomMock = new ();
+            randomMock = new();
             randomMock.Setup(x => x.Next(It.IsAny<System.Range>()))
                 .Returns((System.Range range) => range.Start.Value);
+            randomMock.Setup(x => x.NextElement(It.IsAny<List<It.IsAnyType>>()))
+                .Returns((IEnumerable<object> list) => list.First());
 
-            worldProvider = new (randomMock.Object, nameGeneratorMock.Object);
+            worldProvider = new(randomMock.Object, nameGeneratorMock.Object);
         }
 
         [Test]
